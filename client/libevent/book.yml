@@ -1,0 +1,13 @@
+title: libevent Client Manual
+
+baseurl: /docs/client/libevent
+assets: /docs/client/libevent/assets
+
+vars:
+  download-url: /download/client/libevent/latest
+  api-url: /apidocs/libevent
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .

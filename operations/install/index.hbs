@@ -1,0 +1,150 @@
+---
+layout: page-div
+title: Install Aerospike
+description: Aerospike is developed and optimized for Linux, with virtual machine support for OS X and Windows provided with Vagrant
+linux:
+  title: Linux
+  items:
+    - title: Install on Red Hat Variants
+      image: /assets/images/logos/redhat.png
+      href: "/docs/operations/install/linux/el6"
+    - title: Install on Ubuntu
+      image: /assets/images/logos/ubuntu.png
+      href: "/docs/operations/install/linux/ubuntu"
+    - title: Install on Debian
+      image: /assets/images/logos/debian.png
+      href: "/docs/operations/install/linux/debian"
+    - title: Install on Other Linux Systems
+      image: /assets/images/logos/linux.png
+      href: "/docs/operations/install/linux/other"
+    - title: Install from Source
+      image: /assets/images/logos/github.png
+      href: "http://github.com/aerospike/aerospike-server"
+    - title: Install with docker
+      image: /assets/images/logos/docker.png
+      href: "/docs/deploy_guides/docker"
+cloud:
+  title: Cloud
+  items:
+    - title: Install on Amazon
+      image: /assets/images/logos/amazon-web-services.png
+      href: "/docs/deploy_guides/aws/cloudformation"
+    - title: Install on Azure
+      image: /assets/images/logos/msazurelogo.png
+      href: "/docs/deploy_guides/azure/install"
+    - title: Install on Google Compute
+      image: /assets/images/logos/GOOGLE_CloudPlatform.png
+      href: "/docs/deploy_guides/gcp/launcher"
+
+virtualized:
+  title: OS X and Windows
+  items:
+    - title: Install on OS X
+      image: /assets/images/logos/vagrant-os-x.png
+      href: "/docs/operations/install/vagrant/mac"
+    - title: Install on Windows
+      image: /assets/images/logos/vagrant-win.png
+      href: "/docs/operations/install/vagrant/win"
+---
+
+<style>
+.install > ul.cards {
+  text-align: left;
+  margin-left: 0px;
+}
+
+.install > ul.cards > li {
+  display: inline-block;
+  list-style: none;
+  margin: 1rem 0rem 2.5rem 0rem;
+}
+
+.install > ul.cards > li a {
+  border: 1px solid transparent;
+  border: 1px solid #ddd;
+  padding: 1.5rem;
+}
+
+.install > ul.cards > li a img {
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: grayscale(100%);
+  opacity: 0.66;
+  width: 125px;
+  height: auto;
+}
+
+.install > ul.cards > li a:hover {
+  border: 1px solid #ddd;
+  box-shadow: 0 0 8px #c31618;
+}
+
+.install > ul.cards > li a:hover img {
+  -webkit-filter: none;
+  -moz-filter: none;
+  filter: none;
+  opacity: 1;
+}
+
+.install > ul.cards > li a:active {
+  box-shadow: inset 2px 2px 4px #eee;
+}
+</style>
+
+<p>Aerospike is developed and optimized for 64-bit Linux. Aerospike supports
+popular Linux distributions, with <b>.rpm</b> packages for Red Hat variants,
+<b>.deb</b> packages for Ubuntu and Debian, binary packages and source builds.
+</p>
+<p>Aerospike provides an <a href="https://aws.amazon.com/amazon-linux-ami/" target="_blank">Amazon Linux AMI</a>,
+prebuilt with the required dependencies. Other cloud providers are supported as well.
+</p>
+<p>OS X and Windows are supported using Vagrant managed virtual
+machines. With the <a href="https://vagrantcloud.com/aerospike" target="_blank">Vagrant cloud</a> virtual
+machine distribution system you will be able to download and run Aerospike with
+a few simple commands.
+</p>
+
+<div class="row">
+  <div class="small-4 columns">
+    {{#linux}}
+      <section class="install">
+        <header>
+          <h4>{{title}}</h4>
+        </header>
+        <ul class="cards">
+          {{#items}}
+            <li><a href="{{href}}"><img src="{{image}}" alt="{{title}}" class="lang-logo"/></a></li>
+          {{/items}}
+        </ul>
+      </section>
+    {{/linux}}
+  </div>
+  <div class="small-4 columns">
+    {{#virtualized}}
+    <section class="install">
+        <header>
+          <h4>{{title}}</h4>
+        </header>
+        <ul class="cards">
+          {{#items}}
+            <li><a href="{{href}}"><img src="{{image}}" alt="{{title}}" class="lang-logo"/></a></li>
+          {{/items}}
+        </ul>
+      </section>
+    {{/virtualized}}
+  </div>
+  <div class="small-4 columns">
+    {{#cloud}}
+    <section class="install">
+        <header>
+          <h4>{{title}}</h4>
+        </header>
+        <ul class="cards">
+          {{#items}}
+            <li><a href="{{href}}"><img src="{{image}}" alt="{{title}}" class="lang-logo"/></a></li>
+          {{/items}}
+        </ul>
+      </section>
+    {{/cloud}}
+  </div>
+</div>

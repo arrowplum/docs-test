@@ -1,0 +1,16 @@
+title: Go Client Manual
+
+baseurl: /docs/client/go
+assets: /docs/client/go/assets
+
+vars:
+  download-url: /download/client/go/latest
+  api-url: https://godoc.org/github.com/aerospike/aerospike-client-go
+  github-url: http://github.com/aerospike/aerospike-client-go
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .
+
+

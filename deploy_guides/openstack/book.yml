@@ -1,0 +1,9 @@
+title: Openstack Deployment Guide
+
+baseurl: /docs/deploy_guides/openstack
+assets: /docs/deploy_guides/openstack/assets
+
+contents:
+  - title: Overview
+    href: .
+

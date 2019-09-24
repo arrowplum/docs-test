@@ -1,0 +1,14 @@
+title: Python Client Manual
+
+baseurl: /docs/client/python
+assets: /docs/client/python/assets
+
+vars:
+  download-url: /download/client/python/latest
+  api-url: /apidocs/python
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .
+  

@@ -1,0 +1,320 @@
+---
+layout: page-div
+title: Histograms for server versions before 3.9
+description: Learn how asloglatency, the Aerospike Log Latency tool, analyzes histograms in the Aerospike log files and renders the latency measurements into a tabular, easy to read form.
+---
+
+<style>
+ .panel-heading {
+   background: #000
+   color: #fff
+ }
+
+ ul.histograms {
+   list-style: none;
+   padding: 0;
+   margin: 0;
+ }
+
+ul.histograms > li {
+   margin-bottom: 2em;
+   margin-left: 2em;
+}
+
+ul.histograms > li > .name h4 {
+   padding: 0;
+   margin: 0;
+   font-weight: 700;
+}
+
+ul.histograms > li > .description {
+   margin-left: 2em;
+}
+
+a.clean {
+   color: inherit;
+   text-decoration: inherit;
+}
+
+div.message {
+   margin: 0;
+}
+</style>
+
+{{#markdown}}
+
+## Histograms
+
+
+  Periodically, Aerospike writes histograms to the Aerospike log file. The frequency
+  is configured by `ticker-interval` in the
+  [Aerospike configuration file](/docs/reference/configuration). Histograms
+  begin with the text "histogram dump:" followed by the histogram name and the
+  number of measurements represented by the histogram. The next lines
+  contain a maximum of four buckets each. Each bucket is of the form
+  `(BUCKET_NUMBER: NUM_OBSERVED)`. The threshold for a given bucket is
+  2<sup>BUCKET_NUMBER</sup> units<br>
+
+By default, every ten seconds, some histogram data are generated into the log file, here are the 4 main ones:
+
+| Type of Histogram Data | Description |
+| --- | --- |
+| reads | Time taken for read requests from the time they are received at the node to when the response leaves the node. |
+| writes_master | Time taken for writes from end-to-end (includes the time taken for replica write). |
+| proxy | Time for completion of proxy requests from the time they are received at the node to when the response leaves the node. A proxy is a read or write request that arrives at a node, but the node is not the data master for that data, so the request is forwarded to the correct node for processing. The time for completing proxy requests is higher because the node does not handle the request itself, it must wait for the correct node to respond and then forward the response back to the client. |
+| writes_reply | Normally this can be ignored and is very similar to the writes_master data. If you have set fire-and-forget mode (this is not common), then this histogram data shows the end-to-end time for write requests, but without waiting for confirmation from the replica that the write has been completed.
+
+  The following example shows a proxy histogram:
+  ```asciidoc
+  May 22 2014 01:49:29 GMT: INFO (info): (hist.c::55) histogram dump: proxy (5114 total)
+  May 22 2014 01:49:29 GMT: INFO (info): (hist.c::70)  (00: 0000002056)  (01: 0000000821)  (02: 0000001088)  (03: 0000000795)
+  May 22 2014 01:49:29 GMT: INFO (info): (hist.c::78)  (04: 0000000306)  (05: 0000000047)  (06: 0000000001)
+  ```
+  We see that the proxy histogram has seen 5114 measurements, 2056 of which were less than 2<sup>0</sup>ms.
+
+
+  ### Sample Asloglatency commands
+
+  ```bash
+  $ asloglatency -h writes_master
+  ```
+
+  It returns the following histogram for writes_master:
+
+  ```bash
+  writes_master
+  Mar 25 2013 21:58:58
+  % > (ms)
+  slice-to (sec)      1      8     64  ops/sec
+  -------------- ------ ------ ------ --------
+  21:59:08    10   1.56   0.09   0.00   1932.3
+  21:59:18    10   1.74   0.04   0.00   1937.7
+  21:59:28    10   1.25   0.11   0.00   1952.6
+  21:59:38    10   1.37   0.08   0.00   1940.3
+  21:59:48    10   1.63   0.08   0.00   1946.7
+  21:59:58    10   1.34   0.07   0.00   1938.4
+  22:00:08    10   1.29   0.08   0.00   1957.7
+  22:00:18    10   1.40   0.07   0.00   1947.1
+  22:00:28    10   1.28   0.10   0.00   1940.3
+  -------------- ------ ------ ------ --------
+  avg         1.43   0.08   0.00   1943.0
+  max         1.74   0.11   0.00   1957.7
+  ```
+  {{#note}}
+    Press Enter or CTRL+C to stop the script and display averages & maximums.
+  {{/note}}
+
+  Histogram buckets illustrate a distribution of events.  Column 1 contains the counts of writes_master that were not complete within 1 ms. The second column contains counts of writes_master that were not complete after 8 ms.
+
+  asloglatency does not calculate in increments between 0 and 1. If you need to measure sub-millisecond latencies, you can measure them and calculate averages on the client.
+
+
+  Another common use case is to examine a time period in the past. The following example analyzes reads:
+
+  ```bash
+  asloglatency -h reads -f -12:00:00 -d 2:00
+  ```
+  The analysis starts 12 hours before the end of the log file. It reviews two minutes of records, and analyzes data in 10 second increments.
+
+  ```bash
+  reads
+  Mar 25 2013 22:01:38
+  % > (ms)
+  slice-to (sec)      1      8     64  ops/sec
+  -------------- ------ ------ ------ --------
+  22:01:48    10   1.13   0.04   0.00   4661.8
+  22:01:58    10   1.00   0.05   0.00   4402.1
+  22:02:08    10   0.93   0.03   0.00   4246.7
+  22:02:18    10   0.75   0.03   0.00   4161.3
+  22:02:28    10   0.87   0.03   0.00   4157.0
+  22:02:38    10   0.77   0.04   0.00   4161.2
+  22:04:08    10   0.80   0.03   0.00   4213.1
+  22:04:19    11   0.94   0.04   0.00   3719.6
+  22:04:29    10   1.21   0.03   0.00   4264.7
+  22:04:39    10   1.06   0.05   0.00   4101.3
+  22:04:49    10   0.78   0.04   0.00   3872.4
+  -------------- ------ ------ ------ --------
+  avg         0.97   0.04   0.00   4188.0
+  max         1.34   0.05   0.00   4661.8
+  ```
+
+  {{#note}}
+    Analyzing a time period that bridges a server restart distorts results of
+    time slices and average/maximum calculations.
+  {{/note}}
+
+  ### Macro-Benchmarks
+
+  Macro-benchmarks provide a set of histograms that measure end-to-end
+  performance of Aerospike subsystems.
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "name"}}
+    {{#is type "macro"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h4>{{name}}</h4>
+    </a>
+  </div>
+  <div class="description">
+    {{description}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+
+{{#markdown}}
+
+  ### Micro-Benchmarks
+
+  Micro-Benchmarks provide a set of histograms that measure slices of a
+  transaction at key transition points. They help you to identify hardware and software bottlenecks. Due to their subtle
+  performance impact they are disabled by default. You can enable them by passing
+  the [set-config](/docs/tools/asinfo/index.html#set-config) command to the
+  [asinfo](/docs/tools/asinfo) utility.
+
+  To enable micro-benchmarks:
+  ```bash
+  asinfo -h [host ip] -v "set-config:context=service;microbenchmarks=true"
+  ```
+  To disable micro-benchmarks:
+  ```bash
+  asinfo -h [host ip] -v "set-config:context=service;microbenchmarks=false"
+  ```
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "name"}}
+    {{#is type "micro"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h4>{{name}}</h4>
+    </a>
+  </div>
+  <div class="description">
+    {{description}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+
+{{#markdown}}
+
+  ### Storage-Benchmarks
+
+  Storage-Benchmarks provide a set of device-targeted histograms that measures
+  performance of the storage subsystem in time slices. They provide insight
+  into performance issues related to storage devices. Due to their subtle
+  performance impact, they are disabled by default. You can enable them by passing
+  the [set-config](/docs/tools/asinfo/index.html#set-config) command to the
+  [asinfo](/docs/tools/asinfo) utility.
+
+  To enable storage-benchmarks:
+  ```bash
+  asinfo -h [host ip] -v "set-config:context=service;storage-benchmarks=true"
+  ```
+  To disable storage-benchmarks:
+  ```bash
+  asinfo -h [host ip] -v "set-config:context=service;storage-benchmarks=false"
+  ```
+{{/markdown}}
+<ul class="histograms">
+  {{#withSort histograms.histograms "name"}}
+    {{#is type "storage"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h4>{{name}}</h4>
+    </a>
+  </div>
+  <div class="description">
+    {{description}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+
+{{#markdown}}
+
+  ### Secondary Index Benchmarks
+
+  Secondary Index Benchmarks provide a set benchmarks targeted to a particular
+  index measuring various components of a query and index. Due to their subtle
+  performance impact, they are disabled by default. You can enable them by
+  passing the [sindex-histogram](/docs/tools/asinfo/index.html#sindex-histogram) command
+  to the [asinfo](/docs/tools/asinfo) utility.
+
+  To enable storage-benchmarks:
+  ```bash
+  asinfo -h [host ip] -v "sindex-histogram:ns=NAMESPACE;indexname=INDEX;enable=true"
+  ```
+  To disable storage-benchmarks:
+  ```bash
+  asinfo -h [host ip] -v "sindex-histogram:ns=NAMESPACE;indexname=INDEX;enable=false"
+  ```
+
+
+### Histogram Logs
+
+In the log file, each set of histogram data looks like this:
+
+```asciidoc
+[timestamp/tracking] histogram dump: type (number of cumulative transactions for this node)
+
+[timestamp/tracking] (interval: number of transactions) (interval: number of cumulative transactions) etc.
+```
+
+By default, there are four sets of histogram data generated every ten seconds, one for each type of histogram dump (reads, writes_master, proxy and writes_reply) as described above. These numbers are cumulative since the last Aerospike service start. A typical set of histogram data for reads (all read requests) might look like this:
+
+```asciidoc
+Aug 24 2012 18:02:35 GMT: INFO (info): (hist.c:49) histogram dump: reads (90443310 total)
+Aug 24 2012 18:02:35 GMT: INFO (info): (hist.c:64) (00: 0089886682) (01: 0000180363) (02: 0000107252) (03: 0000150313)
+Aug 24 2012 18:02:35 GMT: INFO (info): (hist.c:64) (04: 0000091264) (05: 0000024060) (06: 0000003137) (07: 0000000154)
+Aug 24 2012 18:02:35 GMT: INFO (info): (hist.c:72) (08: 0000000035) (09: 0000000029) (10: 0000000021)
+```
+
+In this example, there were 90,443,310 read requests to this node since the last time Aerospike service started. In this case, there are ten intervals with the last interval showing reads that completed in 2<sup>9</sup> to 2<sup>10</sup> ms (512 ms to 1024 ms). The second line shows that 89,886,682 transactions were processed in the 0 interval (under 1 ms) since uptime.  So 99.4% of transactions were processed in under 1 ms cumulatively. Then 180,363 requests completed in 1-2 ms, 107,252 requests completed in 2-4 ms, etc. In the 10th and final interval, just 21 transactions (out of 90 million) took 512-1024 ms to complete.
+
+### Interpreting the Histogram Data
+
+In order to interpret the histogram data, we recommend using `asloglatency` that is included in our Aerospike Tools package. For more information on usage, see [Log Latency Tool](/docs/tools/asloglatency). This utility helps analyse log files and returns the latency measurements (shown as percentage of operations) for specified time slices.
+
+
+Just as an example, let's look at sample histogram for a node that is not performing well.  The node received 77,160,037 read requests and 62,856,557 were completed in under 1 ms (81%) since it was restarted. The 13th (final) interval shows 111,289 requests required 4096 to 8192 ms to complete.  (We replaced the drives for this node.) This shows poor performance during reads but in order to interpret the specific time post which the performance degraded, we would need to use `asloglatency` tool.
+
+```asciidoc
+Feb 21 2013 19:29:29 GMT: INFO (info): (hist.c:49) histogram dump: reads (77160037 total)
+Feb 21 2013 19:29:29 GMT: INFO (info): (hist.c:64)  (00: 0062856557)  (01: 0006010842)  (02: 0002984053)  (03: 0001201477) 
+Feb 21 2013 19:29:29 GMT: INFO (info): (hist.c:64)  (04: 0000528804)  (05: 0000526571)  (06: 0000479380)  (07: 0000307062) 
+Feb 21 2013 19:29:29 GMT: INFO (info): (hist.c:64)  (08: 0000248506)  (09: 0000343465)  (10: 0000536859)  (11: 0000533880) 
+Feb 21 2013 19:29:29 GMT: INFO (info): (hist.c:72)  (12: 0000491292)  (13: 0000111289)
+```
+{{/markdown}}
+

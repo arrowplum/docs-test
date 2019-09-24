@@ -1,0 +1,13 @@
+title: Rust Client Manual
+
+baseurl: /docs/client/rust
+
+vars:
+  download-url: /download/client/rust/latest
+  api-url: https://docs.rs/aerospike/
+  github-url: http://github.com/aerospike/aerospike-client-rust/
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .

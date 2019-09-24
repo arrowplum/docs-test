@@ -1,0 +1,190 @@
+---
+layout: page-div
+title: Metrics Reference
+description: Learn the names and descriptions of Aerospike's metrics located in Statistics, Namespace or XDR.
+nav-id: metrics
+---
+<link rel="stylesheet" type="text/css" href="/assets/styles/layouts/references.css">
+
+<div class="columns small-12 medium-12">
+    <h1>Metric Reference</h1>
+    <p>
+        Metrics are divided into {{metrics.locations.length}} locations which map to
+        the asinfo command required to retrieve the metric from Aerospike. See Location Description below for details.
+    </p>
+
+    <!-- # Manipulating Runtime Configuration -->
+    <div class="panel-group" id="config-accord" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="config_head_1">
+                <h4 class="panel-title docs-section-heading">
+                    <span class="collapsed" role="button" data-toggle="collapse"
+                          data-parent="#config-accord"  href="#config_col_1"
+                          aria-expanded="false" aria-controls="config_col_1">
+                        <a class="primary" href="#">Location Description</a>
+                    </span>
+                </h4>
+            </div>
+            <div id="config_col_1" class="panel-collapse collapse" role="tabpanel" aria-labelledby="config_head_1">
+                <section class="location-description">
+                    <ul>
+                        {{#metrics.locations}}
+                            <li><strong>{{name}}</strong>: {{#markdown}}{{description}}{{/markdown}}</li>
+                        {{/metrics.locations}}
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </div>
+
+
+   <div id="configuration-table-header">
+        <div id="show-removed">
+            <input type="checkbox" id="show-removed-box" />
+            <label for="show-removed">Show <span id="num-removed"></span> removed parameters</label>
+        </div>
+        <input type="search" id="config-filter" placeholder="Enter parameter name or tag"/>
+    </div>
+    <table id="metrics-table" class="reference">
+        <thead>
+            <tr>
+                <th>Metric Locations</th>
+            </tr>
+        </thead>
+        {{#withSort metrics.contexts "location"}}
+            <tbody class="group-block">
+                <tr class="group"><td>Location: {{location}}</td></tr>
+                {{#withSort metrics "name"}}
+                    <tr class="param-entry {{#removed}} removed{{/removed}}">
+                        <td>
+                            <h2 id="{{name}}" class="param-name"><a class="relative-anchor" href="#{{name}}">{{name}}</a></h2>
+
+                            <span class="param-tags">
+                                {{#ee-only}}
+                                    <sup class='enterprise'>[enterprise]</sup>
+                                {{/ee-only}}
+                                {{#if cumulative}}
+                                    <sup class='cumulative'>[cumulative]</sup>
+                                {{else}}
+                                    <sup class='instantaneous'>[instantaneous]</sup>
+                                {{/if}}
+                            </span>
+
+                            <div class="param-detail">
+                                <div>{{#location}}<strong>Location:</strong><br/> {{.}}{{/location}}</div>
+                                <div>{{#introduced}}<strong>Introduced:</strong><br/> {{.}}{{/introduced}}</div>
+                                <div>
+                                    {{#removed}}
+                                        <span class='removed'>
+                                            <strong>Removed:</strong><br/> {{.}}
+                                        </span>
+                                    {{/removed}}
+                                </div>
+                            </div>
+                            {{#markdown}}{{description}}{{/markdown}}
+
+                            {{#if (string-concat example tip extra-note warning detail) }}
+                                <details>
+                                    <summary>
+                                        More Information
+                                    </summary>
+                                    <p>
+                                        {{#detail}}{{#markdown}}{{.}}{{/markdown}}{{/detail}}
+                                        {{#example}}<strong>Example:</strong>{{#markdown}}{{.}}{{/markdown}}{{/example}}
+                                        {{#tip}}{{#info markdown=true}}**Tip:**<br>{{.}}{{/info}}{{/tip}}
+                                        {{#extra-note}}{{#note markdown=true}}**Note:**<br>{{.}}{{/note}}{{/extra-note}}
+                                        {{#warning}}{{#warn markdown=true}}**Warning:**<br>{{.}}{{/warn}}{{/warning}}
+                                    </p>
+                                </details>
+                            {{/if}}
+                        </td>
+                    </tr>
+                {{/withSort}}
+            {{/withSort}}
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+     (function () {         
+        function getParm(name) {
+            var names = new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)').exec(location.search);
+            if (names) {
+                return decodeURIComponent(names[1]);
+            }
+            return null;
+        }
+
+        function tryPushState(queryString) {
+            if (queryString.charAt(0) != "?") {
+                queryString = "?" + queryString;
+            }
+            var hash = window.location.hash || "";
+            var pathname = window.location.pathname || "";
+            queryString = pathname + queryString + hash;
+            if (typeof history.pushState == "function") {
+                history.pushState(null, null, queryString);
+            } else {
+                window.location.search = queryString;
+            }
+        }
+
+        function runTableFilters(term) {
+            term = term && term.toLowerCase();
+            let entries = $("table.reference .param-entry");
+            entries.show();
+            entries.filter(function () {
+                if (! $("#show-removed-box").prop("checked") && $(this).hasClass("removed")) {
+                    return true; // still hide removed
+                }
+                return term && this.innerText.toLowerCase().indexOf(term) === -1;
+            }).hide();
+            
+            $("table.reference .group-block").show();
+            $("table.reference .group-block").filter(function () {
+                return $(".param-entry:visible", this).length === 0;
+            }).hide();
+        }
+
+        function processAnchorLinks() {
+            $("a.relative-anchor").attr("href", function() {
+                return window.location.pathname + window.location.search + "#" + $(this).attr("href").split("#").pop();
+            }).click(function() {
+                if (typeof this.scrollIntoView === "function" && typeof history.pushState == "function") {
+                    this.scrollIntoView();
+                    history.pushState(null, null, $(this).attr("href"));
+                    return false;
+                }
+            });
+
+        }
+
+        $("#config-filter").on("input", _.debounce(function () {
+            let term = this.value;
+            runTableFilters(term);
+        }, 200));
+
+        $("#show-removed-box").on("change", function () {
+            if (this.checked) {
+                tryPushState("?show-removed=1");
+                processAnchorLinks();
+            } else {
+                tryPushState("?show-removed=0");
+                processAnchorLinks();
+            }
+
+            runTableFilters($("#config-filter").value);
+        });
+
+        if (getParm("show-removed") === "1") {
+            $("#show-removed-box").prop("checked", true);
+        } else {
+            $("#show-removed-box").prop("checked", false);
+        }
+
+        $("#num-removed").text($("table.reference .param-entry.removed").length);
+        runTableFilters();
+        processAnchorLinks();
+    }());
+</script>

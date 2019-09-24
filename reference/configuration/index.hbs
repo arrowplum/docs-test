@@ -1,0 +1,323 @@
+---
+layout: page-div
+title: Configuration Reference
+description: "Learn how to get and change Aerospike configuration parameters found in the configuration file."
+nav-id: config
+
+---
+
+<link rel="stylesheet" type="text/css" href="/assets/styles/layouts/references.css">
+
+<div class="columns small-12 medium-12">
+    <h1>Configuration Reference</h1>
+
+    {{#markdown}}
+This page lists all of the configuration parameters that can be
+specified in the Aerospike configuration file
+`/etc/aerospike/aerospike.conf`.
+    {{/markdown}}
+
+    <!-- # Manipulating Runtime Configuration -->
+    <div class="panel-group" id="config-accord" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="config_head_1">
+                <h4 class="panel-title docs-section-heading">
+                    <span class="collapsed" role="button" data-toggle="collapse"
+                          data-parent="#config-accord"  href="#config_col_1"
+                          aria-expanded="false" aria-controls="config_col_1">
+                        <a class="primary" href="#">Manipulating Runtime Configuration</a>
+                    </span>
+                </h4>
+            </div>
+            <div id="config_col_1" class="panel-collapse collapse" role="tabpanel" aria-labelledby="config_head_1">
+                <section class="runtime-config">
+                    <br/>
+                    {{#markdown}}
+To get the configuration values from a running system, use:
+
+```bash
+asinfo -v 'get-config:'
+```
+
+To get the configuration value for a specific context, use:
+
+```bash
+asinfo -v 'get-config:context=<context_name>'
+```
+
+For example, to get the XDR specific configuration values, use:
+
+```bash
+asinfo -v 'get-config:context=xdr'
+
+#Example to get namespace specific configuration
+asinfo -v 'get-config:context=namespace;id=<namespace_name>'
+```
+
+To change the dynamic configuration values on a running system, use:
+
+```bash
+asinfo -v 'set-config:context=<context_name>;<optional_ID>;<parameter>=<value>'
+
+asinfo -v 'set-config:context=<context_name>;<subcontext_name>.<parameter>=<value>'
+
+#Note that the sub-context is not required for subcontext=storage-engine
+
+#Example for set subcontext
+asinfo -v 'set-config:context=namespace;id=<namespace>;set=<setname>;<parameter>=<value>'
+
+#Example for XDR when setting per-DC configuration
+asinfo -v 'set-config:context=xdr;datacenter=<dc_name>;<parameter>=<value>'
+```
+**Where:**
+
+`set-config` - Command used to change any dynamically configurable parameter.
+
+`context` - The component being updated; allowed values are logging, namespace, security, service, xdr, network.
+
+`subcontext` - The sub-component being updated; allowed values are heartbeat, fabric, datacenter, file, set.
+
+`id` - This is required only if updating namespace-specific configuration values.
+
+`parameter` - This is the configuration name that is being updated.
+
+
+For example:
+
+```bash
+asinfo -v 'set-config:context=service;proto-fd-max=100000'
+
+asinfo -v 'set-config:context=namespace;id=test;defrag-sleep=500'
+
+asinfo -v 'set-config:context=network;heartbeat.protocol=v3'
+```
+
+{{#info}}For Access Control enabled clusters, authentication is required in order to
+get the server configuration details as well as the `sys-admin` permission in order to dynamically change
+configuration parameters.
+{{/info}}
+                    {{/markdown}}
+                </section>
+            </div>
+        </div>
+
+        <!-- # Configuration Parameter Classification -->
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="config_head_2">
+                <h4 class="panel-title docs-section-heading">
+                    <span class="collapsed" role="button" data-toggle="collapse"
+                          data-parent="#config-accord" href="#config_col_2"
+                          aria-expanded="false" aria-controls="config_col_2">
+                        <a class="primary" href="#">Configuration Parameter Classification</a>
+                    </span>
+                </h4>
+            </div>
+            <div id="config_col_2" class="panel-collapse collapse"
+                 role="tabpanel" aria-labelledby="config_head_2">
+
+                <section class="params-classification">
+                    <br/>
+                    <div class="param-detail" >
+                        <div><sup class='enterprise'>[enterprise]</sup><br/>
+                            Configruation parameters that are only valid on Aerospike Enterprise.
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="param-detail">
+                        <div><sup class='dynamic'>[dynamic]</sup><br/>
+                            Configuration parameters that may be changed at runtime.
+                        </div>
+                        <div><sup class='static'>[static]</sup><br/>
+                            Configuration parameters that can only be set when starting the node.
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="param-detail">
+                        <div><sup class='required'>[required]</sup><br/>
+                            Configuration parameters required for Aerospike to start.
+                        </div>
+                        <div><sup class='unanimous'>[unanimous]</sup><br/>
+                            Configuration parameters that must be the same across the cluster.
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+
+    <br/>
+ 
+    {{#markdown}}
+### Configuration Parameters
+    {{/markdown}}
+    <div id="configuration-table-header">
+        <div id="show-removed">
+            <input type="checkbox" id="show-removed-box" />
+            <label for="show-removed">Show <span id="num-removed"></span> removed parameters</label>
+        </div>
+        <input type="search" id="config-filter" placeholder="Enter parameter name or tag"/>
+    </div>
+    <table id="configuration-table" class="reference">        
+        {{#withSort parameters.contexts "name"}}
+            <tbody class="group-block">
+                <tr class="group"><td colspan="1">{{name}}</td></tr>
+                    {{#withSort parameters "name"}}
+                        
+                        {{#is dnd false}}
+                            <tr class="param-entry{{#removed}} removed{{/removed}}">
+                            <td>
+                                <h2 id="{{name}}" class="param-name"><a class="relative-anchor" href="#{{name}}" target="_self">{{name}}</a></h2>
+                                    <span class='param-tags'>
+                                        {{#ee-only}}
+                                            <span data-tooltip aria-haspopup="true" class="has-tip"
+                                                title="Configruation parameters that are only valid on Aerospike Enterprise.">
+                                                <sup class='enterprise'>[enterprise]</sup>
+                                            </span>
+                                        {{/ee-only}}
+                                        {{#required}}
+                                            <span data-tooltip aria-haspopup="true" class="has-tip"
+                                                title="Configuration parameters required for Aerospike to start.">
+                                                <sup class='required'>[required]</sup>
+                                            </span>
+                                        {{/required}}
+                                        {{#unanimous}}
+                                            <span data-tooltip aria-haspopup="true" class="has-tip"
+                                                title="Configuration parameters that must be the same across the cluster.">
+                                                <sup class='unanimous'>[unanimous]</sup>
+                                            </span>
+                                        {{/unanimous}}
+                                        {{#if dynamic}}
+                                            <span data-tooltip aria-haspopup="true" class="has-tip"
+                                                title="Configuration parameters that may be changed at runtime.">
+                                                <sup class='dynamic'>[dynamic]</sup>
+                                            </span>
+                                        {{else}}
+                                            <span data-tooltip aria-haspopup="true" class="has-tip"
+                                                title="Configuration parameters that can only be set when starting the node.">
+                                                <sup class='static'>[static]</sup>
+                                            </span>
+                                        {{/if}}
+                                    </span>
+
+                                    <div class="param-detail">
+                                        <div><strong>Context:<br/></strong> {{../../name}}</div>
+                                        <div>{{#subcontext}}<strong>Subcontext:</strong><br/> {{.}}{{/subcontext}}</div>
+                                        <div>{{#default-value}}<strong>Default:</strong><br/> {{.}}{{/default-value}}</div>
+                                        <div>{{#version}}<strong>Introduced:</strong><br/> {{.}}{{/version}}</div>
+                                        <div>
+                                            {{#removed}}
+                                                <span class='removed'>
+                                                    <strong>Removed:</strong><br/> {{.}}
+                                                </span>
+                                            {{/removed}}
+                                        </div>
+                                    </div>
+
+                                    {{#markdown}}{{summary}}{{/markdown}}
+                                    {{#if (string-concat example tip extra-note warning detail) }}
+                                        <details>
+                                            <summary>
+                                                Additional Information
+                                            </summary>
+                                            <p>
+                                                {{#detail}}{{#markdown}}{{.}}<br>{{/markdown}}{{/detail}}
+                                                {{#example}}<strong>Example:</strong>{{#markdown}}{{.}}{{/markdown}}{{/example}}
+                                             {{#tip}}{{#info markdown=true}}**Tip:**<br>{{.}}{{/info}}{{/tip}}
+                                                {{#extra-note}}{{#note markdown=true}}**Note:**<br>{{.}}{{/note}}{{/extra-note}}
+                                                {{#warning}}{{#warn markdown=true}}**Warning:**<br>{{.}}{{/warn}}{{/warning}}
+                                            </p>
+                                        </details>
+                                    {{/if}}
+                                </td>
+                          </tr>
+                        {{/is}}
+                {{/withSort}}
+            </tbody>
+        {{/withSort}}
+    </table>
+</div>
+
+<script>
+     (function () {         
+        function getParm(name) {
+            var names = new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)').exec(location.search);
+            if (names) {
+                return decodeURIComponent(names[1]);
+            }
+            return null;
+        }
+
+        function tryPushState(queryString) {
+            if (queryString.charAt(0) != "?") {
+                queryString = "?" + queryString;
+            }
+            var hash = window.location.hash || "";
+            var pathname = window.location.pathname || "";
+            queryString = pathname + queryString + hash;
+            if (typeof history.pushState == "function") {
+                history.pushState(null, null, queryString);
+            } else {
+                window.location.search = queryString;
+            }
+        }
+
+        function runTableFilters(term) {
+            term = term && term.toLowerCase();
+            let entries = $("table.reference .param-entry");
+            entries.show();
+            entries.filter(function () {
+                if (! $("#show-removed-box").prop("checked") && $(this).hasClass("removed")) {
+                    return true; // still hide removed
+                }
+                return term && this.innerText.toLowerCase().indexOf(term) === -1;
+            }).hide();
+            
+            $("table.reference .group-block").show();
+            $("table.reference .group-block").filter(function () {
+                return $(".param-entry:visible", this).length === 0;
+            }).hide();
+        }
+
+        function processAnchorLinks() {
+            $("a.relative-anchor").attr("href", function() {
+                return window.location.pathname + window.location.search + "#" + $(this).attr("href").split("#").pop();
+            }).click(function() {
+                if (typeof this.scrollIntoView === "function" && typeof history.pushState == "function") {
+                    this.scrollIntoView();
+                    history.pushState(null, null, $(this).attr("href"));
+                    return false;
+                }
+            });
+
+        }
+
+        $("#config-filter").on("input", _.debounce(function () {
+            let term = this.value;
+            runTableFilters(term);
+        }, 200));
+
+        $("#show-removed-box").on("change", function () {
+            if (this.checked) {
+                tryPushState("?show-removed=1");
+                processAnchorLinks();
+            } else {
+                tryPushState("?show-removed=0");
+                processAnchorLinks();
+            }
+
+            runTableFilters($("#config-filter").value);
+        });
+
+        if (getParm("show-removed") === "1") {
+            $("#show-removed-box").prop("checked", true);
+        } else {
+            $("#show-removed-box").prop("checked", false);
+        }
+
+        $("#num-removed").text($("table.reference .param-entry.removed").length);
+        runTableFilters();
+        processAnchorLinks();
+    }());
+</script>
+ 

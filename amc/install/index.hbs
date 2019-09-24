@@ -1,0 +1,115 @@
+---
+layout: page-div
+title: Install AMC
+description: The Aerospike Management Console (AMC) is developed and optimized for Linux but can be installed on Mac OS and on Vagrant boxes.
+---
+
+<style>
+.platform > header {
+  border-bottom: 1px solid #ddd;
+  margin: 1em 0;
+}
+.platform > header > h1 {
+  font-size: 2.3em;
+  margin: 0;
+}
+
+.platform .actions {
+  list-style: none;
+  margin: 1em 0 0 0;
+  padding: 0;
+}
+
+.platform .actions > .action {
+  margin: 0 40px;
+  border-bottom: 1px solid #eee;
+}
+.platform .actions > .action:last-child {
+  border: none;
+}
+
+.platform .actions > .action > a {
+  display: block;
+  padding: 4px 0;
+}
+.platform .actions > .action > a:hover {
+  /*background: #f8f8f8;*/
+}
+.platform .actions > .action > a:hover > .image {
+  background: #f8f8f8;
+  border: 1px solid #eee;
+}
+.platform .actions > .action > a > .image {
+  width: 124px;
+  height: 46px;
+  display: inline-block;
+  float: left;
+  margin: 4px 12px;
+  padding: 8px 12px;
+  text-align: center;
+  border: 1px solid #e8e8e8;
+  background: #eee;
+}
+.platform .actions > .action > a > .image > img {
+  max-width: 100px;
+  max-height: 30px;
+}
+.platform .actions > .action > a > .desc {
+  display: inline-block;
+  text-align: left;
+  padding: 12px 4px;
+  margin: 0 12px;
+}
+
+</style>
+
+  <div>
+    The Aerospike Management Console is developed and optimized for Linux. Aerospike provides
+    packaging for some of the popular Linux distributions and a generic <code>tar.gz</code>
+    which can be used on any Linux distribution.
+  </div>
+
+<section class="platform" id="linux">
+  <header>
+    <h1>Linux</h1>
+  </header>
+  <ul class="actions">
+    <li class="action">
+      <a href="/docs/amc/install/linux/el6" class="clearfix">
+        <div class="image"><img src="/assets/images/logos/redhat.png"/></div>
+        <div class="desc ">For use with Red Hat and CentOS 6+</div>
+      </a>
+    </li>
+    <li class="action">
+      <a href="/docs/amc/install/linux/ubuntu" class="clearfix">
+        <div class="image"><img src="/assets/images/logos/ubuntu.png"/></div>
+        <div class="desc">For use with Ubuntu 12.04+, Debian 6+</div>
+      </a>
+    </li>
+    <li class="action">
+      <a href="/docs/amc/install/linux/any" class="clearfix">
+        <div class="image"><img src="/assets/images/logos/linux.png"/></div>
+        <div class="desc">For use with other Linux distributions</div>
+      </a>
+    </li>
+  </ul>
+</section>
+
+<section class="platform" id="macosx">
+  <header>
+    <h1>Install on OS X / Other Linux</h1>
+  </header>
+  <div>
+    The Aerospike Management Console can be installed on OS X using this package. AMC also 
+    comes preinstalled on the <a href="/docs/operations/install/vagrant/mac">Vagrant boxes</a>
+    provided by Aerospike.
+  </div>
+  <ul class="actions">
+    <li class="action">
+      <a href="/docs/amc/install/mac/osx" class="clearfix">
+        <div class="image"><img src="/assets/images/logos/Mac_OS.png"></div>
+        <div class="desc ">Install on OS X</div>
+      </a>
+    </li>
+  </ul>
+</section>

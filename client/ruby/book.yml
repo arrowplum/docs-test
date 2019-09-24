@@ -1,0 +1,16 @@
+title: Ruby Client Manual
+
+baseurl: /docs/client/ruby
+assets: /docs/client/ruby/assets
+
+vars:
+  download-url: /download/client/ruby/latest
+  api-url: http://www.rubydoc.info/gems/aerospike/
+  github-url: http://github.com/aerospike/aerospike-client-ruby
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .
+  
+

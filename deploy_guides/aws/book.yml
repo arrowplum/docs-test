@@ -1,0 +1,12 @@
+title: Amazon Deployment Guide
+
+baseurl: /docs/deploy_guides/aws
+assets: /docs/deploy_guides/aws/assets
+
+vars:
+  github-url: https://github.com/aerospike/aws-cloudformation
+
+contents:
+  - title: Overview
+    href: .
+

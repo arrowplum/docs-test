@@ -1,0 +1,13 @@
+title: Aerospike Hadoop
+
+baseurl: /docs/connectors/community/ashadoop
+assets: /docs/connectors/assets
+
+vars:
+  hadoop-github-url: https://github.com/aerospike/aerospike-hadoop
+  spark-github-url: https://github.com/sasha-polev/aerospark
+  server-install: /docs/operations/install
+
+contents:
+  - title: Use Cases
+    href: ashadoop/usecases/index.html

@@ -1,0 +1,9 @@
+title: Microsoft Azure Deployment Guide
+
+baseurl: /docs/deploy_guides/azure
+assets: /docs/deploy_guides/azure/assets
+
+contents:
+  - title: Overview
+    href: .
+

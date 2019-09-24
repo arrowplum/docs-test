@@ -1,0 +1,674 @@
+histograms:
+
+  ##############################################################################
+  # 3.9 AUTO-ENABLED HISTOGRAMS
+  ##############################################################################
+  - name: "batch-index"
+    type: "auto-enabled"
+    description: |
+      Batch read "parent" transaction. Tracks time taken from start to response completion. For server versions prior to 4.4, 
+      this histogram only included the final "chunk" when reading a large request out of the socket, and therefore could under-report the latency. 
+      If batch-index calls are showing high latencies on the client side, consider changing the `maxConcurrentThreads` (taking the Java client library's BatchPolicy as example) 
+      from its default `1` (sequential) to `0` (or a number greater than `0`) to allow concurrent synchronous batch request threads to server nodes at any point in time.
+
+  - name: "{ns}-read"
+    type: "auto-enabled"
+    description: |
+      Time taken for read requests from the time they are received at the node to when the response leaves the node.
+
+  - name: "{ns}-write"
+    type: "auto-enabled"
+    description: |
+      Time taken for writes from end-to-end (includes the time taken for replica write). Does not include deletes. For server versions prior to 4.4, 
+      this histogram only included the final "chunk" when reading a large request out of the socket, and therefore could under-report the latency.
+
+  - name: "{ns}-udf"
+    type: "auto-enabled"
+    description: |
+      Time taken for UDF transactions.
+
+  - name: "{ns}-query"
+    type: "auto-enabled"
+    description: |
+      Time taken for Query transactions.
+
+  - name: "{ns}-query-rec-count"
+    type: "auto-enabled"
+    description: |
+      This displays the records returned per query. Note that this histogram shows the distribution of counts, and not latencies.
+
+  - name: "{ns}-re-repl"
+    type: "auto-enabled"
+    description: |
+      Latencies when re-replicating. Only available in strong consistency enabled namespaces.
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - INFO
+  ##############################################################################
+
+  - name: "info"
+    type: "config-enabled-info"
+    description: |
+      Time taken for an info protocol transaction.
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - SVC
+  ##############################################################################
+
+  - name: "svc-demarshal"
+    type: "config-enabled-svc"
+    description: |
+      Time taken for any demarshal completion (picking data off the network interface queues). For server versions prior to 4.4, 
+      this histogram only included the final "chunk" when reading a large request out of the socket, and therefore could under-report the latency.
+
+  - name: "svc-queue"
+    type: "config-enabled-svc"
+    description: |
+      Time taken from demarshal completion to transaction queue pop.
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - PROXY
+  ##############################################################################
+
+  - name: "proxy"
+    type: "config-enabled-proxy"
+    description: |
+      Time taken for proxy transactions.
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - READ
+  ##############################################################################
+
+  - name: "read-start"
+    type: "config-enabled-read"
+    order: 1
+    description: |
+      Time taken from the beginning of a transaction to when a node partition is reserved. This includes the svc-demarshal 
+      slice. High latencies here could indicate bottleneck at the network or CPU (and often irq balancing) as well as in the 
+      transaction queue. This includes the demarshal part (tracked for all transactions under `svc-demarshal` as well as the 
+      time spent in the transaction queue (tracked for all transactions under `svc-queue`).
+
+  - name: "read-restart"
+    type: "config-enabled-read"
+    order: 2
+    description: |
+      Time taken for a partition to be reserved to a partition being re-reserved (possible internal restart/reattempt, e.g. "key busy" on duplicate resolve).
+      For this slice, in the case of a potential hotkey, the clock actually starts as soon as the transaction gets into the rw-hash, 
+      until it is being reattempted. A first goes through the transaction queue, then get picked up by a transaction thread and if there 
+      is already an entry in the rw-hash for this record (for transactions required to go through the rw-hash), it will wait for the 
+      transaction being processed to complete, which will then put all the transaction waiting on the rw-hash back in the transaction 
+      queue in order for those transactions to be re-attempted. The same transaction can be re-queued multiple times (each will be counted 
+      as a separate transaction in this slice), but the clock will be reset everytime a transaction gets into the rw-hash. Therefore, a 
+      transaction being re-queued multiple time will not have its total accumulated time accounted for, but rather only the time it waited 
+      in the rw-hash (queued behind a transaction in progress) the last time prior to going through.
+
+
+  - name: "read-dup-res"
+    type: "config-enabled-read"
+    order: 3
+    description: |
+      Time taken from a partition reserved to duplicates resolved (only during ongoing data rebalancing). Note that timeouts are not included.
+
+  - name: "read-local"
+    type: "config-enabled-read"
+    order: 4
+    description: |
+      Time taken from partition reserved or after duplicate resolution to an actual local record read.  For 
+      [`data-in-memory`](/docs/reference/configuration/index.html#data-in-memory) `true`, 
+      this is the slice for reading from memory.  For [`data-in-memory`](/docs/reference/configuration/index.html#data-in-memory) 
+      `false`, this is the slice for reading from the disk except when the record 
+      is still in the [`post-write-queue`](/docs/reference/configuration#post-write-queue) or in cached 
+      ([`read-page-cache`](/docs/reference/configuration#read-page-cache) enabled). 
+      To troubleshoot further, enable storage benchmarks.
+
+  - name: "read-response"
+    type: "config-enabled-read"
+    order: 5
+    description: |
+      Time taken from local record read to client response completion. High latencies here could indicate a bottleneck 
+      on the network or the client, getting slow to consume responses from the server.
+
+  - name: "read-repl-ping"
+    type: "config-enabled-read"
+    order: 6
+    description: |
+      Time taken for reading all the copies of a record when the linearize read policy is in effect. This only applies for strong consistency enabled namespaces.
+
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - WRITE
+  ##############################################################################
+
+  - name: "write-start"
+    type: "config-enabled-write"
+    order: 1
+    description: |
+      Time taken from the beginning of a transaction to when a node partition is reserved. This includes the svc-demarshal 
+      slice. High latency here could indicate bottleneck at the network or CPU (and often irq balancing) as well as in the 
+      transaction queue. This includes the demarshal part (tracked for all transactions under `svc-demarshal` as well as the 
+      time spent in the transaction queue (tracked for all transactions under `svc-queue`). For server versions prior to 4.4, 
+      this histogram only included the final "chunk" when reading a large request out of the socket, and therefore could under-report the latency.
+
+  - name: "write-restart"
+    type: "config-enabled-write"
+    order: 2
+    description: |
+      Time taken for a partition to be reserved to a partition being re-reserved (possible internal restart/reattempt, e.g. "key busy").
+      For this slice, in the case of a potential hotkey, the clock actually starts as soon as the transaction gets into the rw-hash, 
+      until it is being reattempted. A first goes through the transaction queue, then get picked up by a transaction thread and if there 
+      is already an entry in the rw-hash for this record (for transactions required to go through the rw-hash), it will wait for the 
+      transaction being processed to complete, which will then put all the transaction waiting on the rw-hash back in the transaction 
+      queue in order for those transactions to be re-attempted. The same transaction can be re-queued multiple times (each will be counted 
+      as a separate transaction in this slice), but the clock will be reset everytime a transaction gets into the rw-hash. Therefore, a 
+      transaction being re-queued multiple time will not have its total accumulated time accounted for, but rather only the time it waited 
+      in the rw-hash (queued behind a transaction in progress) the last time prior to going through.
+
+  - name: "write-dup-res"
+    type: "config-enabled-write"
+    order: 3
+    description: |
+      Time taken from a partition reserved to duplicates resolved (only during ongoing data rebalancing). Note that timeouts are not included.
+
+  - name: "write-master"
+    type: "config-enabled-write"
+    order: 4
+    description: |
+      Time taken from partition reserved or after duplicate resolution to an actual master record write.
+
+  - name: "write-repl-write"
+    type: "config-enabled-write"
+    order: 5
+    description: |
+      Time taken from master record written to replica(s) written.
+
+  - name: "write-response"
+    type: "config-enabled-write"
+    order: 6
+    description: |
+      Time taken from master write (if write-commit-level configured to master) or replica write to client response completion. 
+      High latencies here could indicate a bottleneck on the network or the client, getting slow to consume responses from the server.
+
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - UDF
+  ##############################################################################
+
+  - name: "udf-start"
+    type: "config-enabled-udf"
+    order: 1
+    description: |
+      Time taken from the beginning of a transaction to when a node partition is reserved. This includes the demarshal 
+      part (tracked for all transactions under `svc-demarshal` as well as the time spent in the transaction queue 
+      (tracked for all transactions under `svc-queue`).
+
+  - name: "udf-restart"
+    type: "config-enabled-udf"
+    order: 2
+    description: |
+      Time taken for a partition to be reserved to a partition being re-reserved (possible internal restart/reattempt, e.g. "key busy"). 
+      Refer to the [`write-restart`](/docs/operations/monitor/latency/index.html#write-restart) histogram for further details about 
+      transactions being reattempted. 
+
+  - name: "udf-dup-res"
+    type: "config-enabled-udf"
+    order: 3
+    description: |
+      Time taken from a partition reserved to duplicates resolved (only during ongoing data rebalancing). Note that timeouts are not included.
+
+  - name: "udf-master"
+    type: "config-enabled-udf"
+    order: 4
+    description: |
+      Time taken from partition reserved or after duplicate resolution to an actual master record applied.
+
+  - name: "udf-repl-write"
+    type: "config-enabled-udf"
+    order: 5
+    description: |
+      Time taken from master record written to replica(s) written.
+
+  - name: "udf-response"
+    type: "config-enabled-udf"
+    order: 6
+    description: |
+      Time taken from master write (if write-commit-level configured to master) or replica write to client response completion.
+
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - SUB-UDF
+  ##############################################################################
+
+  - name: "udf-sub-start"
+    type: "config-enabled-sub-udf"
+    order: 1
+    description: |
+      Time taken from the beginning of a transaction to when a node partition is reserved. This includes the demarshal 
+      part (tracked for all transactions under `svc-demarshal` as well as the time spent in the transaction queue 
+      (tracked for all transactions under `svc-queue`).
+
+  - name: "udf-sub-restart"
+    type: "config-enabled-sub-udf"
+    order: 2
+    description: |
+      Time taken for a partition to be reserved to a partition being re-reserved (possible internal restart/reattempt, e.g. "key busy"). 
+      Refer to the [`write-restart`](/docs/operations/monitor/latency/index.html#write-restart) histogram for further details about 
+      transactions being reattempted. 
+
+
+  - name: "udf-sub-dup-res"
+    type: "config-enabled-sub-udf"
+    order: 3
+    description: |
+      Time taken from a partition reserved to duplicates resolved (only during ongoing data rebalancing). Note that timeouts are not included.
+
+  - name: "udf-sub-master"
+    type: "config-enabled-sub-udf"
+    order: 4
+    description: |
+      Time taken from partition reserved or after duplicate resolution to an actual master record applied.
+
+  - name: "udf-sub-repl-write"
+    type: "config-enabled-sub-udf"
+    order: 5
+    description: |
+      Time taken from master record written to replica(s) written.
+
+  - name: "udf-sub-response"
+    type: "config-enabled-sub-udf"
+    order: 6
+    description: |
+      Time taken from master write (if write-commit-level configured to master) or replica write to client response completion.
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - BATCH
+  ##############################################################################
+
+  - name: "batch-sub-start"
+    type: "config-enabled-batch"
+    order: 1
+    description: |
+      Time taken from the beginning of a transaction to when a node partition is reserved. This includes the demarshal 
+      part (tracked for all transactions under `svc-demarshal` as well as the time spent in the transaction queue 
+      (tracked for all transactions under `svc-queue`). For server versions prior to 4.4, 
+      this histogram only included the final "chunk" when reading a large request out of the socket, and therefore could under-report the latency.
+
+  - name: "batch-sub-restart"
+    type: "config-enabled-batch"
+    order: 2
+    description: |
+      Time taken for a partition to be reserved to a partition being re-reserved (possible internal restart/reattempt).
+      Refer to the [`write-restart`](/docs/operations/monitor/latency/index.html#write-restart) histogram for further details about 
+      transactions being reattempted.       
+
+  - name: "batch-sub-dup-res"
+    type: "config-enabled-batch"
+    order: 3
+    description: |
+      Time taken from a partition reserved to duplicates resolved (only during ongoing data rebalancing). Note that timeouts are not included.
+
+  - name: "batch-sub-read-local"
+    type: "config-enabled-batch"
+    order: 4
+    description: |
+      Time taken from partition reserved or after duplicate resolution to an actual local record read.
+
+  - name: "batch-sub-response"
+    type: "config-enabled-batch"
+    order: 5
+    description: |
+      Time taken from local record read to batch parent response completion.
+
+  - name: "batch-sub-repl-ping"
+    type: "config-enabled-batch"
+    order: 6
+    description: |
+      Time taken for reading all the copies of a record when the linearize read policy is in effect. This only applies for strong consistency enabled namespaces.
+
+
+  ##############################################################################
+  # 3.9 CONFIGURATION-ENABLED HISTOGRAMS - STORAGE
+  ##############################################################################
+  - name: "{ns}-[device]-read"
+    type: "config-enabled-storage"
+    description: |
+      Histogram that tracks the time taken to read from disk.
+
+  - name: "{ns}-[device]-write"
+    type: "config-enabled-storage"
+    description: |
+      Histogram that tracks amount of time taken to write write-block to disk.
+      (WBlocks are typically 128KB)
+
+  - name: "{ns}-[device]-large-block-read"
+    type: "config-enabled-storage"
+    description: |
+      Histogram that tracks the amount of time to read write-block from disk.
+      (WBlock is typically 128KB)
+
+  - name: "{ns}-[device]-fsync"
+    type: "config-enabled-storage"
+    description: |
+     Histogram that tracks the time taken for fsync. (Available in Server Version 4.3.0.10 and below. Deprecated in Server Version 4.3.1.3.)
+  
+  - name: "{ns}-device-read-size"
+    type: "config-enabled-storage"
+    description: |
+      Histogram that tracks the size of the objects being read.
+  
+  - name: "{ns}-device-write-size"
+    type: "config-enabled-storage"
+    description: |
+      Histogram that tracks the size of the objects being written. This includes replica writes from other nodes 
+      (on namespaces with replication factor 2 or more). This does not include defragmentation writes.
+
+  #############################################################################
+  # 3.10 CONFIGURATION-ENABLED HISTOGRAMS - FABRIC
+  #############################################################################
+
+  - name: "fabric-[channel]-send-init"
+    type: "config-enabled-fabric"
+    order: 1
+    description: |
+      Histogram that tracks the time taken for preparing a message for sending over fabric (intra cluster communication). 
+      Does not include any network operations. Replace [channel] with one of bulk (migrations), ctrl (paxos and migration control), meta (smd) or rw (read / write transactions).
+
+  - name: "fabric-[channel]-send-fragment"
+    type: "config-enabled-fabric"
+    order: 2
+    description: |
+      Histogram that tracks the time taken from end of send-init and stops after the network send. Can be hit multiple times if message was too big to fit in the send buffer.
+      Replace [channel] with one of bulk (migrations), ctrl (paxos and migration control), meta (smd) or rw (read / write transactions).
+
+  - name: "fabric-[channel]-recv-fragment"
+    type: "config-enabled-fabric"
+    order: 3
+    description: |
+      Histogram that tracks the time taken from the beginning of the first byte of a message from network and ends after network recv. 
+      Can be hit multiple times if message was big enough to require multiple network recv calls.
+      Replace [channel] with one of bulk (migrations), ctrl (paxos and migration control), meta (smd) or rw (read / write transactions).
+
+  - name: "fabric-[channel]-recv-cb"
+    type: "config-enabled-fabric"
+    order: 4
+    description: |
+      Histogram that tracks the time taken to process the transaction on the receiving node (rw, bulk, control, meta).
+      Replace [channel] with one of bulk (migrations), ctrl (paxos and migration control), meta (smd) or rw (read / write transactions).
+
+  ##############################################################################
+  # MACRO HISTOGRAMS
+  ##############################################################################
+  - name: "proxy"
+    type: "macro"
+    description: |
+      Tracks proxy transaction performance.
+
+  - name: "reads"
+    type: "macro"
+    description: |
+      Tracks read transaction performance.
+
+  - name: "writes_master"
+    type: "macro"
+    description: |
+      Tracks write transaction performance.
+
+  - name: "writes_reply"
+    type: "macro"
+    description: |
+      Tracks write performance from start to reply to client.<br>
+      Should match writes_master unless Aerospike is configured for Asynchronous
+      replication.
+
+  - name: "udf"
+    type: "macro"
+    description: |
+      Tracks UDF transaction performance.
+
+  - name: "query"
+    type: "macro"
+    description: |
+      Tracks Query transaction performance.
+
+  - name: "query_rec_count"
+    type: "macro"
+    unit: "records"
+    description: |
+      Tracks number of rows returned by Queries.
+
+  ##############################################################################
+  # MICRO HISTOGRAMS
+  ##############################################################################
+  - name: "batch_index_reads"
+    type: "micro"
+    description: |
+      Histogram of time spent processing batch requests. Includes the time spent doing the send 
+      back to the client. Individual reads under the reads related microbenchmarks.
+
+  - name: "batch_q_process"
+    type: "micro"
+    description: |
+      Histogram of time spent processing batch messages in transaction queue.
+
+  - name: "defrag_storage_close"
+    type: "micro"
+    description: |
+      Histogram of time spent around record_storage close on a defrag path.
+
+  - name: "demarshal_hist"
+    type: "micro"
+    description: |
+      Histogram around demarshal loop only.
+
+  - name: "error"
+    type: "micro"
+    description: |
+      Histogram of error requests only.
+
+  - name: "info_fulfill"
+    type: "micro"
+    description: |
+      Histogram of time spent to fulfill info request after taking it off the
+      info queue.
+
+  - name: "info_post_lock"
+    type: "micro"
+    description: |
+      Histogram of time spent processing the Info command under the mutex
+      before sending the response on the network.
+
+  - name: "info_q_wait"
+    type: "micro"
+    description: |
+      Histogram of time info transaction spends on info queue.
+
+  - name: "info_tr_q_process"
+    type: "micro"
+    description: |
+      Histogram of time spent processing info messages in transaction queue.
+
+  - name: "prole_fabric_send"
+    type: "micro"
+    description: |
+      Histogram of time spent for prole fabric getting queued.
+
+  - name: "q_wait"
+    type: "micro"
+    description: |
+      Histogram taken right after transaction is plucked off the queue.
+
+  - name: "reads_cleanup"
+    type: "micro"
+    description: |
+      Histogram around as_storage_record_close and as_record_done.
+
+  - name: "reads_internal"
+    type: "micro"
+    description: |
+      Read histogram from internal to rw_complete.
+
+  - name: "reads_net"
+    type: "micro"
+    description: |
+      Histogram around the network send on reads. Slow network or clients slow 
+      to consume the response will be reflected in this microbenchmark. For batch 
+      index reads, this does not cover the network send but the packaging of the 
+      response back on to the parent thread handling the batch. 
+
+  - name: "reads_q_process"
+    type: "micro"
+    description: |
+      Histogram from transaction off queue to read_start.
+
+  - name: "reads_resolve"
+    type: "micro"
+    description: |
+      Histogram that tracks duplicate resolution after receiving all messages
+      from other nodes.
+
+  - name: "reads_resolve_wait"
+    type: "micro"
+    description: |
+      Histogram that tracks the time the master waits for other nodes to
+      complete duplicate resolution on reads.
+
+  - name: "reads_start"
+    type: "micro"
+    description: |
+      Read histogram from read_start to internal.
+
+  - name: "reads_storage_open"
+    type: "micro"
+    description: |
+      Histogram around as_storage_record_open.
+
+  - name: "reads_storage_read"
+    type: "micro"
+    description: |
+      Histogram taken from after opening the device to after reading from device.
+
+  - name: "reads_tree"
+    type: "micro"
+    description: |
+      Histogram from rw_complete to fetching record from rb tree.
+
+  - name: "scan_q_process"
+    type: "micro"
+    description: |
+      Histogram of time spent processing scan messages in transaction queue.
+
+  - name: "write_storage_close"
+    type: "micro"
+    description: |
+      Histogram of time spent around record_storage close on a write path.
+
+  - name: "writes_internal"
+    type: "micro"
+    description: |
+      Write histogram from internal to either send to prole or return to
+      client (if no replication).
+
+  - name: "writes_net"
+    type: "micro"
+    description: |
+      Histogram around the network send on writes.
+
+  - name: "writes_prole"
+    type: "micro"
+    description: |
+      Histogram that tracks write replication performance (in fabric).
+
+  - name: "writes_q_process"
+    type: "micro"
+    description: |
+      Histogram from transaction off queue to write_start.
+
+  - name: "writes_resolve"
+    type: "micro"
+    description: |
+      Histogram that tracks duplicate resolution after receiving all messages
+      from other nodes.
+
+  - name: "writes_resolve_wait"
+    type: "micro"
+    description: |
+      Histogram that tracks the time the master waits for other nodes to
+      complete duplicate resolution on writes.
+
+  - name: "writes_start"
+    type: "micro"
+    description: |
+      Write histogram from write_start to internal.
+
+  - name: "wt_master_wait_prole"
+    type: "micro"
+    description: |
+      Histogram of time spent on master between sending read/write transaction
+      to the replica node and the node responding with an acknowledgment.
+
+  ##############################################################################
+  # STORAGE HISTOGRAMS
+  ##############################################################################
+  - name: "SSD_READ_[n] [device]"
+    type: "storage"
+    description: |
+      Histogram that tracks the time to read from disk.
+
+  - name: "SSD_LARGE_BLOCK_READ_[n] [device]"
+    type: "storage"
+    description: |
+      Histogram that tracks amount of time to read WBlock to disk.
+      (WBlocks are typically 128KB)
+
+  - name: "SSD_WRITE_[n] [device]"
+    type: "storage"
+    description: |
+      Histogram that tracks the amount of time to write WBlock to disk.
+      (WBlock is typically 128KB)
+
+  ##############################################################################
+  # SINDEX HISTOGRAMS
+  ##############################################################################
+  - name: "[SINDEX_NAME]_write_us"
+    type: "sindex"
+    description: |
+      Histogram measuring secondary index write performance, unit is microseconds.
+
+  - name: "[SINDEX_NAME]_si_prep_us"
+    type: "sindex"
+    description: |
+      Histogram of time spent gathering secondary index key values from records, unit is microseconds.
+
+  - name: "[SINDEX_NAME]_delete_us"
+    type: "sindex"
+    description: |
+      Histogram measuring secondary index delete performance, unit is microseconds.
+
+  - name: "[SINDEX_NAME]_query"
+    type: "sindex"
+    description: |
+      Histogram for entire query execution time, unit is milliseconds.
+
+  - name: "[SINDEX_NAME]_query_batch_lookup_us"
+    type: "sindex"
+    description: |
+      Histogram of time spent performing secondary index lookup from primary index digest tree for the qualifying recods for the specific secondary index query, unit is microseconds.
+
+  - name: "[SINDEX_NAME]_query_batch_io_us"
+    type: "sindex"
+    description: |
+      Histogram of time spent reading qualified records from storage for the secondary index query, unit is microseconds.
+
+  - name: "[SINDEX_NAME]_query_row_count"
+    type: "sindex"
+    unit: "records"
+    description: |
+      Histogram of rows selected by query.
+
+  - name: "[SINDEX_NAME]_query_diff_count"
+    type: "sindex"
+    unit: "records"
+    description: |
+      Histogram of false positives returned by sindex.<br>
+      Example: If a sindex returned 100 records but the query read only 95
+      records would indicate that there were 5 false positives which may be the
+      result of garbage collection.

@@ -1,0 +1,9 @@
+title: Kubernetes Guide
+
+baseurl: /docs/deploy_guides/kubernetes
+assets: /docs/deploy_guides/Kubernetes/assets
+
+contents:
+  - title: Overview
+    href: .
+

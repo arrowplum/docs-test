@@ -1,0 +1,244 @@
+---
+layout: page-div
+title: Info Command Reference
+description: Learn the various info commands available from Aerospike.
+nav-id: info
+
+---
+<link rel="stylesheet" type="text/css" href="/assets/styles/layouts/references.css">
+
+<div class="columns small-12 medium-12">
+    <h1>Info Command Reference</h1>
+
+    {{#markdown}}
+The info protocol provides access to Configuration and Statistics for the
+Aerospike Server. The protocol can be accessed by the our
+[clients](/download/client/), over telnet on the info port, or through
+[asinfo](/docs/tools/asinfo).
+
+The examples below will use [asinfo](/docs/tools/asinfo).
+
+#### Commands
+    {{/markdown}}
+    <div id="configuration-table-header">
+        <div id="show-removed">
+            <input type="checkbox" id="show-removed-box" />
+            <label for="show-removed">Show <span id="num-removed"></span> removed parameters</label>
+        </div>
+        <input type="search" id="config-filter" placeholder="Enter parameter name or tag"/>
+    </div>
+
+    <table id="info-table" class="reference">
+ 
+        <tbody>
+            {{#withSort info_commands.commands "name"}}
+                {{#is dnd false}}
+                        <tr class="param-entry{{#removed}} removed{{/removed}}">
+                        <td>
+                            <h2 id="{{name}}" class="param-name"><a class="relative-anchor" href="#{{name}}">{{name}}</a></h2>
+
+                            <span class="param-tags">
+                                {{#ee-only}}
+                                    <sup class='enterprise'>[enterprise]</sup>
+                                {{/ee-only}}
+                            </span>
+
+                            {{#purpose}}
+                                <div class="purpose">
+                                    {{#markdown}}{{.}}{{/markdown}}
+                                </div>
+                            {{/purpose}}
+
+                            <div class="param-detail">
+                                <div>
+                                    <strong>Permission:</strong><br/>
+                                    {{#if permission}}
+                                        {{permission}}
+                                    {{else}}
+                                        auth only
+                                    {{/if}}
+                                </div>
+                                <div>
+                                    {{#since}}
+                                        <strong>Introduced:</strong><br/> {{.}}
+                                    {{/since}}
+                                </div>
+                                <div>
+                                    {{#removed}}
+                                        <span class="removed">
+                                            <strong>Removed:</strong><br/> {{.}}
+                                        </span>
+                                    {{/removed}}
+                                </div>
+                            </div>
+
+                            {{#command}}
+                                <div class="command">
+                                    <h4>Format:</h4>
+                                    {{#code}}{{.}}{{/code}}
+                                </div>
+                            {{/command}}
+
+                            <details class="outer">
+                                <summary>Additional Information</summary>
+                                {{#permission}}
+                                    <div class="permissions">
+                                        <h4>Access Control Permissions</h4>
+                                        <p>{{.}}</p>
+                                    </div>
+                                {{/permission}}
+                                {{#if parameters}}
+                                    <div class="parameters">
+                                        <h4>Parameters</h4>
+                                        <details>
+                                            <summary>Parameters</summary>
+                                            <dl>
+                                                {{#withSort parameters "name"}}
+                                                    <dt>{{name}}</dt>
+                                                    <dd>
+                                                        {{#markdown}}{{description}}{{/markdown}}
+                                                        {{#default-value}}[Default: "{{.}}"]{{/default-value}}
+                                                    </dd>
+                                                {{/withSort}}
+                                            </dl>
+                                        </details>
+                                    </div>
+                                {{/if}}
+                                {{#if output}}
+                                    <div class="output">
+                                        <h4>Output</h4>
+                                        <details>
+                                            <summary>Output</summary>
+                                            <dl>
+                                                {{#output}}
+                                                    {{#title}}<dt>{{.}}</dt>{{/title}}
+                                                    <dd>{{#markdown}}{{description}}{{/markdown}}</dd>
+                                                {{/output}}
+                                            </dl>
+                                        </details>
+                                    </div>
+                                {{/if}}
+                                {{#if examples}}
+                                    <div class="examples">
+                                        <h4>Examples</h4>
+                                        <details>
+                                            <summary>Examples</summary>
+                                            <dl>
+                                                {{#examples}}
+                                                    {{#title}}<dt>{{.}}</dt> {{/title}}
+                                                    <dd>
+                                                        {{#description}}
+                                                            {{#markdown}}{{.}}{{/markdown}}
+                                                        {{/description}}
+                                                        {{#code}}
+                                                            {{#sample}}{{.}}{{/sample}}
+                                                        {{/code}}
+                                                    </dd>
+                                                {{/examples}}
+                                            </dl>
+                                        </details>
+                                    </div>
+                                {{/if}}
+                            </details>
+                            {{#if related}}
+                                <div class="related">
+                                    <b>Related Commands</b>
+                                    <ul>
+                                        {{#withSort related "name"}}
+                                            <li>
+                                                <a href="/docs/reference/info/#{{name}}">{{name}}</a>
+                                            </li>
+                                        {{/withSort}}
+                                    </ul>
+                                </div>
+                            {{/if}}
+                        </td>
+                    </tr>
+                {{/is}}
+            {{/withSort}}
+        </tbody>
+    </table>
+</div>
+
+<script>
+     (function () {         
+        function getParm(name) {
+            var names = new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)').exec(location.search);
+            if (names) {
+                return decodeURIComponent(names[1]);
+            }
+            return null;
+        }
+
+        function tryPushState(queryString) {
+            if (queryString.charAt(0) != "?") {
+                queryString = "?" + queryString;
+            }
+            var hash = window.location.hash || "";
+            var pathname = window.location.pathname || "";
+            queryString = pathname + queryString + hash;
+            if (typeof history.pushState == "function") {
+                history.pushState(null, null, queryString);
+            } else {
+                window.location.search = queryString;
+            }
+        }
+
+        function runTableFilters(term) {
+            term = term && term.toLowerCase();
+            let entries = $("table.reference .param-entry");
+            entries.show();
+            entries.filter(function () {
+                if (! $("#show-removed-box").prop("checked") && $(this).hasClass("removed")) {
+                    return true; // still hide removed
+                }
+                return term && this.innerText.toLowerCase().indexOf(term) === -1;
+            }).hide();
+            
+            $("table.reference .group-block").show();
+            $("table.reference .group-block").filter(function () {
+                return $(".param-entry:visible", this).length === 0;
+            }).hide();
+        }
+
+        function processAnchorLinks() {
+            $("a.relative-anchor").attr("href", function() {
+                return window.location.pathname + window.location.search + "#" + $(this).attr("href").split("#").pop();
+            }).click(function() {
+                if (typeof this.scrollIntoView === "function" && typeof history.pushState == "function") {
+                    this.scrollIntoView();
+                    history.pushState(null, null, $(this).attr("href"));
+                    return false;
+                }
+            });
+
+        }
+
+        $("#config-filter").on("input", _.debounce(function () {
+            let term = this.value;
+            runTableFilters(term);
+        }, 200));
+
+        $("#show-removed-box").on("change", function () {
+            if (this.checked) {
+                tryPushState("?show-removed=1");
+                processAnchorLinks();
+            } else {
+                tryPushState("?show-removed=0");
+                processAnchorLinks();
+            }
+
+            runTableFilters($("#config-filter").value);
+        });
+
+        if (getParm("show-removed") === "1") {
+            $("#show-removed-box").prop("checked", true);
+        } else {
+            $("#show-removed-box").prop("checked", false);
+        }
+
+        $("#num-removed").text($("table.reference .param-entry.removed").length);
+        runTableFilters();
+        processAnchorLinks();
+    }());
+</script>

@@ -1,0 +1,8 @@
+title: Docker Deployment Guide
+
+baseurl: /docs/deploy_guides/docker
+assets: /docs/deploy_guides/docker/assets
+
+contents:
+  - title: Overview
+    href: .

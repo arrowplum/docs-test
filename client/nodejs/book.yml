@@ -1,0 +1,14 @@
+title: Node.js Client Manual
+
+baseurl: /docs/client/nodejs
+assets: /docs/client/nodejs/assets
+
+vars:
+  download-url: /download/client/nodejs/latest
+  github-url: https://github.com/aerospike/aerospike-client-nodejs
+  api-url: https://www.aerospike.com/apidocs/nodejs/
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .

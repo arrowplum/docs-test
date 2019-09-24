@@ -1,0 +1,485 @@
+---
+layout: page-div
+title: Histograms from Aerospike Logs
+description: Histograms appearing in Aerospike logs
+---
+
+<style>
+ .panel-heading {
+   background: #000
+   color: #fff
+ }
+
+ ul.histograms {
+   list-style: none;
+   padding: 0;
+   margin: 0;
+ }
+
+ul.histograms > li {
+   margin-bottom: 1em;
+   margin-left: 2em;
+}
+
+ul.histograms > li > .name h4 {
+   padding: 0;
+   margin: 0;
+   font-weight: 700;
+}
+
+ul.histograms > li > .description {
+   margin-left: 2em;
+}
+
+a.clean {
+   color: inherit;
+   text-decoration: inherit;
+}
+
+div.message {
+   margin: 0;
+}
+</style>
+
+{{#markdown}}
+
+### Differences in pre-3.9 and post-3.9 server versions with respect to histograms
+
+These are the major differences between the previous and the new histograms conventions:
+
+1. Histograms will only appear in the logs if they contain data. For example, you would not expect to see batch specific histogram on a server which does not do any batch read operations.
+
+2. Read and Write histograms are now tracked on per-namespace level basis. So, if you see latencies only on 1 namespace, it will be easier to track down based on the specific data in the namespace and the application writing to it.
+
+3. To analyze read or write transactions in details, you have the option to enable only the relevant configration-enabled benchmark to avoid unnecessary data printed in the logs.
+
+{{#note}}
+For server versions prior to 3.9, see [Histograms for server version before 3.9](/docs/operations/monitor/latency/pre3_9/latency_pre3_9.html).
+{{/note}}
+<br>
+{{#note}}
+For server versions prior to 4.4, all histograms that include the demarshal time slice may be inaccurate, most notably:
+<br>
+<br>
+batch-index, {ns}-batch-sub-start, {ns}-write, {ns}-write-start, svc-demarshal.
+<br>
+<br>
+The older versions of these histograms only included the final "chunk" when reading a large request out of the socket, and therefore could under-report the demarshal latency.
+{{/note}}
+<br>
+{{#info}}
+To analyze histogram data, refer to the [Log Latency Tool](/docs/tools/asloglatency) guide, or the 
+[`histogram` command](/docs/tools/asadm/user_guide/log_analyser_mode_guide#histogram) of the Aerospike Admin (asadm) when used under the 
+log analyzer mode.
+{{/info}}
+<br>
+{{#info}}
+Aerospike also allows for retrieving latency and throughput details for some transaction types through the info protocol. 
+Refer to the [`latency`](/docs/reference/info#latency) and [`throughput`](/docs/reference/info#throughput) info commands.
+{{/info}}
+
+### Histograms
+
+The histograms can be divided into the following two categories:
+
+#### **1. Auto-enabled benchmarks** 
+
+These provide a set of histograms that measure end-to-end performance of Aerospike subsystems and show up once the histogram has data to display.
+
+{{#note}}
+Note: The {ns} refers to the name of the namespace.
+{{/note}}
+
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "name"}}
+    {{#is type "auto-enabled"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+{{#markdown}}
+
+#### **2. Configuration-enabled benchmarks** 
+
+These provide specific histograms that can be enabled or disabled as required dynamically.
+
+#####**General transaction histograms**#####
+
+To enable a specific benchmark, use the following command:
+
+```
+asinfo -v 'set-config:context=service;<configuration>=true'
+```
+
+| Type of Histogram | Description | Configuration |
+| --- | --- | --- |
+| info | Time taken for an info protocol transaction. | enable-hist-info |
+| svc-demarshal | Time taken for any demarshal completion (picking data off the network interface queues). | enable-benchmarks-svc |
+| svc-queue | Time taken from demarshal completion to transaction queue pop. | enable-benchmarks-svc |
+
+
+{{#note}}For server versions prior to 4.4, the `svc-demarshal` histogram only included the final "chunk" when reading a large request out of the socket, and therefore could under-report the latency.{{/note}}
+
+We have divided the rest of the benchmarks as per the transaction types and they are now monitored at the per-namespace level:
+
+#####**Proxy transaction analysis**#####
+
+This displays the time taken for a proxy transaction from sender's view.
+
+```
+asinfo -v 'set-config:context=namespace;id=<namespaceName>;enable-hist-proxy=true'
+```
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "name"}}
+    {{#is type "config-enabled-proxy"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+{{#markdown}}
+
+
+##### **Fabric transaction analysis**#####
+
+{{#note}}
+The fabric histograms are available for server version 3.10 and above, 
+and the per channel fabric histograms are available for server version 3.11.1.1 and above.
+{{/note}}
+
+This displays the time taken for a fabric transaction from sender's view.
+
+```
+asinfo -v 'set-config:context=service;enable-benchmarks-fabric=true'
+```
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "order"}}
+    {{#is type "config-enabled-fabric"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+   {{#markdown}}{{description}}{{/markdown}}
+   {{#unit}}
+     {{#note}}
+       Histogram units are in {{.}}.
+     {{/note}}
+   {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+{{#markdown}}
+
+##### **Read transaction analysis**#####
+
+These histograms display the slices of a single-record read transaction.
+
+```
+asinfo -v 'set-config:context=namespace;id=<namespaceName>;enable-benchmarks-read=true'
+```
+
+{{#info}}
+For versions prior to 4.2.0.2, enabling both the read benchmarks and the batch-sub benchmarks simultaneously will lead to incorrect values.
+{{/info}}
+
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "order"}}
+    {{#is type "config-enabled-read"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+{{#markdown}}
+
+##### **Write transaction analysis**#####
+
+These histograms display the slices of a single-record write transaction. This does not included deletes.
+
+```
+asinfo -v 'set-config:context=namespace;id=<namespaceName>;enable-benchmarks-write=true'
+```
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "order"}}
+    {{#is type "config-enabled-write"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+{{#markdown}}
+
+##### **UDF transaction analysis**#####
+
+These histograms display the slices of a single-record UDF transaction.
+
+```
+asinfo -v 'set-config:context=namespace;id=<namespaceName>;enable-benchmarks-udf=true'
+```
+
+{{#info}}
+For versions prior to 4.2.0.2, enabling both the udf benchmarks and the udf-sub benchmarks simultaneously will lead to incorrect values.
+{{/info}}
+
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "order"}}
+    {{#is type "config-enabled-udf"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+{{#markdown}}
+
+##### **Sub-UDF transaction analysis**#####
+
+These histograms display the slices of internally generated UDF transaction. Usually by a background UDF, scan or a query.
+
+```
+asinfo -v 'set-config:context=namespace;id=<namespaceName>;enable-benchmarks-udf-sub=true'
+
+```
+
+{{#info}}
+For versions prior to 4.2.0.2, enabling both the udf benchmarks and the udf-sub benchmarks simultaneously will lead to incorrect values.
+{{/info}}
+
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "order"}}
+    {{#is type "config-enabled-sub-udf"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+{{#markdown}}
+
+##### **Batch transaction analysis**#####
+
+These histograms display the slices for a batch transaction.
+
+```
+asinfo -v 'set-config:context=namespace;id=<namespaceName>;enable-benchmarks-batch-sub=true'
+```
+
+{{#info}}
+For versions prior to 4.2.0.2, enabling both the read benchmarks and the batch-sub benchmarks simultaneously will lead to incorrect values.
+{{/info}}
+
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "order"}}
+    {{#is type "config-enabled-batch"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+
+{{#markdown}}
+
+##### **Storage transaction analysis**#####
+
+Storage-Benchmarks provide a set of device-targeted histograms that measures performance of the storage subsystem in time slices. They provide insight into performance issues related to storage devices. Due to their subtle performance impact, they are disabled by default. You can enable them by passing the `set-config` command to the `asinfo` utility.
+
+{{#note}}
+**Note**: The size histograms for read (`{ns}-device-read-size`) and writes(`{ns}-device-write-size`) of the records being accessed or written are available server version 3.10 onwards.
+{{/note}}
+
+To enable storage-benchmarks:
+
+```
+asinfo -v 'set-config:context=namespace;id=<namespaceName>;enable-benchmarks-storage=true'
+```
+
+{{/markdown}}
+
+<ul class="histograms">
+  {{#withSort histograms.histograms "order"}}
+    {{#is type "config-enabled-storage"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+
+
+{{#markdown}}
+
+##### **Secondary Index transaction analysis**#####
+
+Secondary Index Benchmarks provide a set benchmarks targeted to a particular index measuring various components of a query and index. Due to their subtle performance impact, they are disabled by default. You can enable them by passing the `sindex-histogram` 
+command to the [asinfo](/docs/tools/asinfo) utility.
+
+  To enable secondary index benchmarks for a specific index:
+
+  ```bash
+  asinfo -h [host ip] -v "sindex-histogram:ns=NAMESPACE;indexname=INDEX;enable=true"
+  ```
+
+{{/markdown}}
+<ul class="histograms">
+  {{#withSort histograms.histograms "name"}}
+    {{#is type "sindex"}}
+      <a name="{{name}}"></a>
+      <li>
+  <div class="name">
+    <a href="#{{name}}">
+      <h5>{{name}}</h5>
+    </a>
+  </div>
+  <div class="description">
+    {{#markdown}}{{description}}{{/markdown}}
+    {{#unit}}
+      {{#note}}
+        Histogram units are in {{.}}.
+      {{/note}}
+    {{/unit}}
+  </div>
+      </li>
+    {{/is}}
+  {{/withSort}}
+</ul>
+

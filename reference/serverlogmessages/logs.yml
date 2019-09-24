@@ -1,0 +1,2955 @@
+- severity: "INFO"
+  context: "as"
+  message: |
+    waiting for storage: 1569063 objects, 1819777 scanned
+  occurs: |
+    When cold starting a node that has data on persistent storage (such as SSD).
+  parameters:
+    - name: "objects"
+      description: |
+        Number of objects from storage device that
+        will be retained
+    - name: "scanned"
+      description: |
+        Number of objects that have been scanned on the storage device
+  description: |
+    **Objects** and **scanned** values will diverge due to various reasons
+    such as scanning records that were previously expired or expired while
+    the system was down.
+
+
+  ################################################################################
+  # drv_ssd context log messages
+  ################################################################################
+
+
+- severity: "INFO"
+  context: "drv_ssd"
+  introduced: "3.10"
+  message: |
+    {namespace} /dev/sda: used-bytes 296160983424 free-wblocks 885103 write-q 0 write (12659541,43.3) defrag-q 0 defrag-read (11936852,39.1) defrag-write (3586533,10.2) shadow-write-q 0 tomb-raider-read (13758,598.0)
+  parameters:
+    - name: "{namespace}"
+      description: |
+        Name of the namespace the device and stats belongs to.
+    - name: "/dev/sda"
+      description: |
+        Name of the device for which the following stats apply.
+    - name: "used-bytes"
+      description: |
+        Number of bytes on this device that are in use. Corresponds to the 
+        [`storage-engine.device[ix].used_bytes`](/docs/reference/metrics/#storage-engine.device%5Bix%5D.used_bytes) 
+        statistic. 
+    - name: "free-wblocks"
+      description: |
+        The number of wblocks that are free (the `device_available_pct`). Corresponds to the 
+        [`storage-engine.device[ix].free_wblocks`](/docs/reference/metrics/#storage-engine.device%5Bix%5D.free_wblocks) 
+        statistic. 
+    - name: "write-q"
+      description: |
+        Number of write buffers pending to be written to the SSD. When this reaches the [`max-write-cache`](/docs/reference/configuration#max-write-cache)
+        configured value (default 64M), 'device overload' errors will be returned and queue too deep warnings
+        will be printed on the server log. Corresponds to the 
+        [`storage-engine.device[ix].write_q`](/docs/reference/metrics/#storage-engine.device%5Bix%5D.write_q) 
+        statistic. 
+    - name: "write"
+      description: |
+        Total number of SSD write buffers ever written to this device (including defragmentation),
+        and the number of write buffers written per second. Corresponds to the 
+        [`storage-engine.device[ix].writes`](/docs/reference/metrics/#storage-engine.device%5Bix%5D.writes) 
+        statistic. 
+    - name: "defrag-q"
+      description: |
+        Number of wblocks pending defragmentation. Those are blocks that have fallen below the `defrag-lwm-pct`,
+        waiting to be read and have their relevant content recombined in a fresh swb. The `defrag-sleep`
+        setting controls the sleep period in between each block being read (default 1ms). Corresponds to the 
+        [`storage-engine.device[ix].defrag_q`](/docs/reference/metrics/#storage-engine.device%5Bix%5D.defrag_q) 
+        statistic. 
+    - name: "defrag-read"
+      description: |
+        Total number of write blocks that have been sent to the defragmentation queue (defrag-q) and will be processed
+        (read) by the defragmentation thread on this device, and the normalization to the average number of wblocks processed per second
+        during the interval at which this message is logged. Usually the defrag-q will be at 0 and w-blocks will be read as
+        they are put on the defrag-q. In such cases, the defrag-read number represents the number of w-blocks read by the defragmentation
+        thread. Corresponds to the 
+        [`storage-engine.device[ix].defrag_reads`](/docs/reference/metrics/#storage-engine.device%5Bix%5D.defrag_reads) 
+        statistic. 
+    - name: "defrag-write"
+      description: |
+        Total number of write blocks ever written by defragmentation on this device, and the number
+        of wblocks written per second in (subset of write). Corresponds to the 
+        [`storage-engine.device[ix].defrag_writes`](/docs/reference/metrics/#storage-engine.device%5Bix%5D.defrag_writes) 
+        statistic. 
+    - name: "shadow-write-q"
+      description: |
+        Number of write buffers pending to be written to the shadow device (only printed when a [shadow device](/docs/operations/configure/namespace/storage#recipe-for-shadow-device)
+        is configured). When this reaches the [`max-write-cache`](/docs/reference/configuration#max-write-cache)
+        configured value (default 64M), 'device overload' errors will be returned and queue too deep warnings
+        will be printed on the server log. Corresponds to the 
+        [`storage-engine.device[ix].shadow_write_q`](/docs/reference/metrics/#storage-engine.device%5Bix%5D.shadow_write_q) 
+        statistic. 
+    - name: "tomb-raider-read"
+      description: |
+        Total number of blocks read by the tomb-raider in the current cycle, and the current number
+        of wblocks read per second. Only printed when the tomb-raider is active.
+
+- severity: "INFO"
+  context: "drv_ssd"
+  introduced: "4.5.1.5"
+  message: |
+    device /dev/sdb: read_complete: added 0 expired 0
+  parameters:
+    - name: "device"
+      description: |
+        Name of the device for which the following stats apply. The stats are a summary of a cold start which read the entire device.
+    - name: "added"
+      description: |
+        Total number of unique records loaded from this device.
+    - name: "expired"
+      description: |
+        Number of records skipped because they were expired.
+
+- severity: "INFO"
+  context: "drv_ssd"
+  introduced: "4.5.1.5"
+  message: |
+    device /dev/sdb: read complete: UNIQUE 20401681 (REPLACED 5619021) (OLDER 11905062) (EXPIRED 0) (EVICTED 0) records
+  parameters:
+    - name: "device"
+      description: |
+        Name of the device for which the following stats apply. The stats are a summary of a cold start which read the entire device.
+    - name: "UNIQUE"
+      description: |
+        Total number of unique records loaded from this device.
+    - name: "REPLACED"
+      description: |
+        Number of records that replaced a version loaded earlier during the device scan (won the conflict resolution).
+    - name: "OLDER"
+      description: |
+        Number of records that were skipped because newer version was loaded earlier during the device scan (lost the conflict resolution).
+    - name: "EXPIRED"
+      description: |
+        Number of records skipped because they were expired.
+    - name: "EVICTED"
+      description: |
+        Number of records skipped because they were evicted.
+
+- severity: "INFO"
+  context: "drv_ssd"
+  removed: "4.5.1.5"
+  message: |
+    device /dev/sdb: read complete: UNIQUE 20401681 (REPLACED 5619021) (OLDER 11905062) (EXPIRED 0) (MAX-TTL 0) records
+  parameters:
+    - name: "device"
+      description: |
+        Name of the device for which the following stats apply. The stats are a summary of a cold start which read the entire device.
+    - name: "UNIQUE"
+      description: |
+        Total number of unique records loaded from this device.
+    - name: "REPLACED"
+      description: |
+        Number of records that replaced a version loaded earlier during the device scan (won the conflict resolution).
+    - name: "OLDER"
+      description: |
+        Number of records that were skipped because newer version was loaded earlier during the device scan (lost the conflict resolution).
+    - name: "EXPIRED"
+      description: |
+        Number of records skipped because they were expired.
+    - name: "MAX-TTL"
+      description: |
+        Number of records that got their ttl truncated down if above the max-ttl specified.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "4.3.0.2"
+  message: |
+    {ns_name} index-flash-usage: used-bytes 5502926848 used-pct 1
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace configured with 'index-type flash'.
+  parameters:
+    - name: "{ns_name}"
+      description: |
+        Name of the namespace the device and stats belongs to.
+    - name: "index-flash-usage"
+      description: |
+        Name for which the following stats apply.
+    - name: "used-bytes"
+      description: |
+        Total bytes in-use on the mount for the primary index used by this namespace on this node.
+    - name: "used-pct"
+      description: |
+        Percentage of the mount in-use for the primary index used by this namespace on this node.
+
+- severity: "INFO"
+  context: "drv_ssd"
+  introduced: "3.6.1"
+  removed: "3.10"
+  message: |
+    device /dev/sdc: used 296160983424, contig-free 110637M (885103 wblocks), swb-free 16, w-q 0 w-tot 12659541 (43.3/s), defrag-q 0 defrag-tot 11936852 (39.1/s) defrag-w-tot 3586533 (10.2/s)
+  parameters:
+    - name: "device"
+      description: |
+        Name of the device for which the following stats apply.
+    - name: "used"
+      description: |
+        Number of bytes of this device in use.
+    - name: "contig-free"
+      description: |
+        Amount of space occupied by free wblocks, and the
+        number of wblocks free in parenthesis.
+    - name: "swb-free"
+      description: |
+        Number of free SSD write buffers. This is only an indication that at some point extra
+        swb (streaming write buffers) were allocated (sign of a back log) and then subsequently
+        released to the swb pool, which will eventually reduce those down if those stay unused.
+    - name: "w-q"
+      description: |
+        Number of write buffers pending to be written to the SSD. When this reaches the `max-write-cache`
+        configured value (default 64M), 'device overload' errors will be returned and queue too deep warnings
+        will be printed on the server log.
+    - name: "w-tot"
+      description: |
+        Total number of SSD write buffers ever written to this device (including defragmentation),
+        and the number of write buffers written per second in parenthesis.
+    - name: "defrag-q"
+      description: |
+        Number of wblocks pending defrag. Those are blocks that have fallen below the `defrag-lwm-pct`,
+        waiting to be read and have their relevant content recombined in a fresh swb. The `defrag-sleep`
+        setting controls the sleep period in between each block being read (default 1ms).
+    - name: "defrag-tot"
+      description: |
+        Total number of write blocks ever processed (read) by defragmentation on this device, and
+        the number of wblocks processed per second in parenthesis.
+    - name: "defrag-w-tot"
+      description: |
+        Total number of write blocks ever written by defragmentation on this device, and the number
+        of wblocks written per second in parenthesis (subset of w-tot).
+
+- severity: "WARNING"
+  context: "drv_ssd"
+  introduced: "3.0"
+  message: |
+    {namespace_name} write fail: queue too deep: exceeds max 512
+  description: |
+    This warning message indicates that although the disks themselves are not necessarily 
+    faulty or nearing end of life, they are not keeping up with the load placed upon them. 
+    Refer to the [Why do I see warning - queue too deep](https://discuss.aerospike.com/t/why-do-i-see-a-warning-write-fail-queue-too-deep/3009) 
+    knowledge-base article for further details.
+
+- severity: "DETAIL"
+  context: "drv_ssd"
+  introduced: "3.16"
+  message: |
+    write: size 9437246 - rejecting &lt;Digest>:0xd751c6d7eea87c82b3d6332467e8bc9a3c630e13
+  description: |
+    Appears with the `WARNING` message about `failed as_storage_record_write()` for 
+    exceeding the [`write-block-size`](/docs/reference/configuration/#write-block-size).
+  parameters:
+    - name: "size"
+      description: |
+        Total size of the record that was rejected
+    - name: "&lt;Digest&gt;"
+      description: |
+        Digest of the record that was rejected
+
+  ################################################################################
+  # exchange context log messages
+  ################################################################################
+
+- severity: "INFO"
+  context: "exchange"
+  message: |
+    received duplicate exchange data from node 783f4ac2fbb57e81
+  description: |
+    Another node has resent exchange data because it did not receive an acknowledgement from this node
+    within half the [heartbeat interval](https://www.aerospike.com/docs/reference/configuration/index.html#interval).
+    This is most likely due to a networking issue of some kind.
+  parameters:
+  - name: "node"
+    description: |
+      NodeID of the origin of the unacknowledged exchange data
+
+
+  ################################################################################
+  # hardware context log messages
+  ################################################################################
+
+
+- severity: "WARNING"
+  context: "hardware"
+  introduced: "4.3"
+  message: |
+    failed to submit command to /dev/nvme0: x109
+  description: |
+    This warning message is benign. It indicates that the underlying NVMe device does not 
+    support health information check. To suppress this message, set log level to critical 
+    for the hardware context.
+
+
+  ################################################################################
+  # info context log messages
+  ################################################################################
+
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  message: |
+    NODE-ID bb97f1d46894206 CLUSTER-SIZE 12
+  parameters:
+    - name: "NODE-ID"
+      description: |
+        The node id, generated based on the mac address and the service port
+    - name: "CLUSTER-SIZE"
+      description: |
+        Number of nodes recognized by this node as being in the cluster
+
+- severity: "INFO"
+  introduced: "3.9"
+  context: "info"
+  message: |
+    system-memory: free-kbytes 305769484 free-pct 57 heap-kbytes (135693715,211404072,233721856) heap-efficiency-pct 58.1
+  parameters:
+    - name: "free-kbytes"
+      description: |
+        Amount of free RAM in kilobytes for the host. For versions prior to 3.16.0.4, the amount of shared memory used is wrongly reported as free.
+    - name: "free-pct"
+      description: |
+        Percentage of all ram free (rounded to nearest percent) for the host. Corresponds to the [`system_free_mem_pct`](/docs/reference/metrics/#system_free_mem_pct).
+        For versions prior to 3.16.0.4, the amount of shared memory used is wrongly reported as free.
+    - name: "heap-kbytes"
+      description: |
+        Heap statistics, in order: ([`heap_allocated_kbytes`](/docs/reference/metrics/#heap_allocated_kbytes), [`heap_active_kbytes`](/docs/reference/metrics/#heap_active_kbytes), [`heap_mapped_kbytes`](/docs/reference/metrics/#heap_mapped_kbytes)). Introduced as of version 3.10.1.
+    - name: "heap-efficiency-pct"
+      description: |
+        Provides an indication of the jemalloc heap fragmentation. This represents the [`heap_allocated_kbytes`](/docs/reference/metrics/#heap_allocated_kbytes) / [`heap_mapped_kbytes`](/docs/reference/metrics/#heap_mapped_kbytes) ratio.
+        A lower number indicates a higher fragmentation rate. Introduced as of version 3.10.1. Corresponds to the [`heap_efficiency_pct`](/docs/reference/metrics/#heap_efficiency_pct) statistic.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  message: |
+    in-progress: tsvc-q 0 info-q 5 rw-hash 0 proxy-hash 0 tree-gc-q 0
+  parameters:
+    - name: "tsvc-q"
+      description: |
+        Number of transactions siting in the transaction queue, waiting to be picked up
+        by a transaction thread. Corresponds to the [`tsvc_queue`](/docs/reference/metrics/#tsvc_queue) statistic.
+    - name: "info-q"
+      description: |
+         Number of transactions on the info transaction queue. Corresponds to the [`info_queue`](/docs/reference/metrics/#info_queue) statistic.
+    - name: "nsup-delete-q"
+      description: |
+        Number of records queued up for deletion by the nsup thread. Removed as of version 4.5.1.
+    - name: "rw-hash"
+      description: |
+         Number of transactions that are parked on the read write hash. This is used for transactions
+         that have to be processed on a different node. For example, prole writes, or read duplicate
+         resolutions (when requested through client policy). Corresponds to the [`rw_in_progress`](/docs/reference/metrics/#rw_in_progress) statistic.
+    - name: "proxy-hash"
+      description: |
+        Number of transactions on the proxy hash waiting for transmission on the fabric.
+        Corresponds to the [`proxy_in_progress`](/docs/reference/metrics/#proxy_in_progress) statistic.
+    - name: "rec-refs"
+      description: |
+        Number of references to a primary key. Removed as of version 3.10.
+    - name: "tree-gc-q"
+      description: |
+        This is the number of trees queued up, ready to be completely removed (partitions drop). Introduced in version 3.10.
+        Corresponds to the [`tree_gc_queue`](/docs/reference/metrics/#tree_gc_queue) statistic.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  message: |
+    fds: proto (3,3,0) heartbeat (0,0,0) fabric (21,21,0)
+  parameters:
+    - name: "proto"
+      description: |
+        (Number of presently open connections between this node and clients corresponding to [client_connections](/docs/reference/metrics/#client_connections) statistic,
+        Number of connections ever opened between this node and clients,
+        Number of connections ever closed between this node and clients - include connections that are reaped after idle (reaped connections correspond to [reaped_fds](/docs/reference/metrics/#reaped_fds) statistic),
+        properly shutdown by the client (initiated a proper socket close)
+        or preliminary packet parsing errors (like unexpected headers, etc...) most of these would have a WARN in the logs)
+    - name: "heartbeat"
+      description: |
+        (Number of presently open heartbeat connections (should be 0 for multicast) corresponding to [heartbeat_connections](/docs/reference/metrics/#heartbeat_connections) statistic,
+        Total number of heartbeat connections ever opened,
+        Total number of heartbeat connections ever closed)
+    - name: "fabric"
+      description: |
+        (Number of presently open fabric (intra-cluster) connections corresponding to [fabric_connections](/docs/reference/metrics/#fabric_connections) statistic,
+        Total number of fabric connections ever opened,
+        Total number of fabric connections ever closed)
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  message: |
+    heartbeat-received: self 887075 : foreign 35456447
+  parameters:
+    - name: "self"
+      description: |
+        Number of heartbeats current node has received from itself (should be 0 for mesh).
+    - name: "foreign"
+      description: |
+        Number of heartbeats the current node has received from all other nodes combined.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.11.1.1"
+  occurs: |
+    Periodically displayed, every 10 seconds by default.
+  message: |
+    fabric-bytes-per-second: bulk (1525,7396) ctrl (33156,46738) meta (42,42) rw (128,128)
+  parameters:
+    - name: "bulk"
+      description: |
+        Current transmit and receive rate for fabric-channel-bulk. This channel
+        is used for record migrations during rebalance.
+    - name: "ctrl"
+      description: |
+        Current transmit and receive rate for fabric-channel-ctrl. This channel
+        is used to distribute cluster membership change events and partition
+        migration control messages.
+    - name: "meta"
+      description: |
+        Current transmit and receive rate for fabric-channel-meta. This channel
+        is used to distribute System Meta Data (SMD) after cluster change events.
+    - name: "rw"
+      description: |
+        Current transmit and receive rate for fabric-channel-rw
+        (**r**ead/**w**rite). This channel is used for replica writes, proxies,
+        duplicate resolution, and various other intra-cluster record operations.
+
+- severity: "INFO"
+  introduced: "3.9"
+  removed: "4.5.1"
+  occurs: |
+    Periodically displayed, every 10 seconds by default. Aggregate across all namespaces.
+    Will only be displayed if there has been any transaction that failed early on this node.
+  context: "info"
+  message: |
+    early-fail: demarshal 0 tsvc-client 1 tsvc-batch-sub 0 tsvc-udf-sub 0
+  parameters:
+    - name: "demarshal"
+      description: |
+        Failure during the demarshal phase of a transaction.
+    - name: "tsvc-client"
+      description: |
+        Failure for client initiated transactions, before getting to the namespace part. This can be due to
+        authentication failure (at the socket level), an initial partition imbalance (node just started and
+        hasn't joined the cluster yet, which results in an unavailable error back to the client), or a missing
+        or bad namespace provided.
+    - name: "tsvc-batch-sub"
+      description: |
+        Similar as above, but as part of a batch sub transaction.
+    - name: "tsvc-udf-sub"
+      description: |
+        Similar as above, but as part of a udf sub transaction.
+
+- severity: "INFO"
+  introduced: "4.5.1"
+  occurs: |
+    Periodically displayed, every 10 seconds by default. Aggregate across all namespaces.
+    Will only be displayed if there has been any transaction that failed early on this node.
+    Cumulative since `asd` start. Single-digit counts are probably benign.
+  context: "info"
+  message: |
+    early-fail: demarshal 0 tsvc-client 1 tsvc-from-proxy 0 tsvc-batch-sub 0 tsvc-from-proxy-batch-sub 0 tsvc-udf-sub 0
+  parameters:
+    - name: "demarshal"
+      description: |
+        Failure during the demarshal phase of a transaction. Metric: [`demarshal_error`](/docs/reference/metrics/index.html#demarshal_error).
+    - name: "tsvc-client"
+      description: |
+        Failure for client initiated transactions, before getting to the namespace part. This can be due to
+        authentication failure (at the socket level), an initial partition imbalance (node just started and
+        hasn't joined the cluster yet, which results in an unavailable error back to the client), or a missing
+        or bad namespace provided. Metric: [`early_tsvc_client_error`](/docs/reference/metrics/index.html#early_tsvc_client_error).
+    - name: "tsvc-from-proxy"
+      description: |
+        Failure for proxied transactions, before getting to the namespace part. This can be due to
+        authentication failure (at the socket level), an initial partition imbalance (node just started and
+        hasn't joined the cluster yet, which results in an unavailable error), or a missing
+        or bad namespace provided. Metric: [`early_tsvc_from_proxy_error`](/docs/reference/metrics/index.html#early_tsvc_from_proxy_error).
+    - name: "tsvc-batch-sub"
+      description: |
+        Similar to above, but as part of a batch sub transaction. Metric: [`early_tsvc_batch_sub_error`](/docs/reference/metrics/index.html#early_tsvc_batch_sub_error).
+    - name: "tsvc-from-proxy-batch-sub"
+      description: |
+        Similar to above, but as part of a proxied batch sub transaction. Metric: [`early_tsvc_from_proxy_batch_sub_error`](/docs/reference/metrics/index.html#early_tsvc_from_proxy_batch_sub_error).
+    - name: "tsvc-udf-sub"
+      description: |
+        Similar as above, but as part of a udf sub transaction. Metric: [`early_tsvc_udf_sub_error`](/docs/reference/metrics/index.html#early_tsvc_udf_sub_error).
+
+- severity: "INFO"
+  introduced: "3.9"
+  occurs: |
+    Periodically displayed, every 10 seconds by default. Aggregate across all namespaces.
+    Will only be displayed if `batch-index` transactions have been issued on this node.
+  context: "info"
+  message: |
+    batch-index: batches (234,0,0)
+  parameters:
+    - name: "batches"
+      description: |
+        Number of batch-index jobs since the server started (Success,Error,Timed out).
+        Success means all the sub-transactions for the batch-index job were dispatched successfully.
+        The sub-transactions for the batch-index job could still error or time out individually
+        even if the parent batch-index job reported a success status. Also, a parent batch-index
+        job not succeeding could still have some of its sub-transactions processed (with
+        any resulting status). There is no correlation possible between a parent batch-index
+        job status and its sub-transactions statuses.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Number of objects for this namespace on this node along with the master and prole breakdown.
+  message: |
+    {ns_name} objects: all 845922 master 281071 prole 564851
+  parameters:
+    - name: "{ns_name}"
+      description: |
+        "ns_name" will be replaced by the name of a particular namespace.
+    - name: "all"
+      description: |
+        Total number of objects for this namespace on this node (master and proles).
+    - name: "master"
+      description: |
+        Number of master objects for this namespace on this node.
+    - name: "prole"
+      description: |
+        Number of prole (replica) objects for this namespace on this node.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    When migrations have completed this line is reduced to `{ns_name} migrations - complete`.
+  message: |
+    {ns_name} migrations: remaining (654,289,254) active (1,1,0) complete-pct 88.49
+  parameters:
+    - name: "{ns_name}"
+      description: |
+        "ns_name" will be replaced by the name of a particular namespace.
+    - name: "remaining"
+      description: |
+        Total number of transmit and receive partition migrations outstanding for this node
+        as well as signals, as of new cluster protocol introduced in version 3.13 (tx,rx,sg).
+        Signals represents the number of signals to send to other nodes (non replica nodes) for partitions to drop.
+        This log line will change to `complete` once migrations are completed on this node.
+    - name: "active"
+      description: |
+        Number of transmit and receive partition migrations currently in progress,
+        as well as active signals as of new cluster protocol introduced in version 3.13 (tx,rx,sg).
+    - name: "complete-pct"
+      description: |
+        Percent of the total number of partition migrations scheduled for this
+        rebalance that have already completed.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace. When 'data-in-memory' is false, 'data-bytes' will not be included.
+  message: |
+    {ns_name} memory-usage: total-bytes 362088 index-bytes 140544 sindex-bytes 221544 data-bytes 2688940 used-pct 0.05
+  parameters:
+    - name: "total-bytes"
+      description: |
+        Total number of bytes used in memory for {ns_name} on the local node.
+    - name: "index-bytes"
+      description: |
+        Number of bytes holding the primary index in system memory for {ns_name} on the local node.
+        <br>Will display 0 when index is not stored in RAM.
+    - name: "sindex-bytes"
+      description: |
+        Number of bytes holding secondary indexes in process memory for {ns_name} on the local node.
+    - name: "data-bytes"
+      description: |
+        Number of bytes holding data in process memory for {ns_name} on the local node.  Displayed only when
+        'data-in-memory' is set to true for {ns_name}.
+    - name: "used pct"
+      description: |
+        Percentage of bytes used in memory for {ns_name} on the local node.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Break down of the device usage if a `storage-engine device` has been configured for the namespace.
+  message: |
+    {ns_name} device-usage: used-bytes 2054187648 avail-pct 92 cache-read-pct 12.35
+  parameters:
+    - name: "used-bytes"
+      description: |
+        Number of bytes used on disk for {ns_name} on the local node.
+    - name: "avail-pct"
+      description: |
+        Minimum percentage of contiguous disk space in {ns_name} on the local node across all devices. Corresponds to the
+        [`device_available_pct`](/docs/reference/metrics#device_available_pct) statistic.
+    - name: "cache-read-pct"
+      description: |
+        Percentage of reads from the post-write cache instead of disk. Only applicable when {ns_name} is not configured for data in memory. Corresponds to the
+        [`cache_read_pct`](/docs/reference/metrics#cache_read_pct) statistc.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Basic client transactions statistics. Will only be displayed after client transactions hit this namespace on this node.<br>
+    The following values define various actions which are displayed in the logs <br>
+    - S - success<br>
+    - E - error<br>
+    - T - timed out<br>
+    - N - not found, which for reads and deletes is a result that wants to be distinguished from success but is not an error<br>
+    - A - aborted by user<br>
+    - C - complete, but success/failure indeterminate (e.g. proxy diverts, UDFs can successfully send a "FAILURE" response bin)<br>
+    - R,W,D - successful UDF read, write, delete operation respectively
+  message: |
+    {ns_name} client: tsvc (0,0) proxy (0,0,0) read (126,0,1,3) write (2886,0,23) delete (197,0,1,19) udf (35,0,1) lang (26,7,0,3)
+  parameters:
+    - name: "tsvc"
+      description: |
+        Failures in the transaction service, before attempting to handle the transaction (E,T).
+        Also reported as the [`client_tsvc_error`](/docs/reference/metrics#client_tsvc_error) and
+        [`client_tsvc_timeout`](/docs/reference/metrics#client_tsvc_timeout) statistics.
+    - name: "proxy"
+      description: |
+        Client proxied transactions (C,E,T). This should only happen during migrations.
+        Also reported as the [`client_proxy_complete`](/docs/reference/metrics#client_proxy_complete), [`client_proxy_error`](/docs/reference/metrics#client_proxy_error) and
+        [`client_proxy_timeout`](/docs/reference/metrics#client_proxy_timeout) statistics.
+    - name: "read"
+      description: |
+        Client read transactions (S,E,T,N).
+        Also reported as the [`client_read_success`](/docs/reference/metrics#client_read_success), [`client_read_error`](/docs/reference/metrics#client_read_error),
+        [`client_read_timeout`](/docs/reference/metrics#client_read_timeout) and [`client_read_not_found`](/docs/reference/metrics#client_read_not_found) statistics.
+    - name: "write"
+      description: |
+        Client write transactions (S,E,T).
+        Also reported as the [`client_write_success`](/docs/reference/metrics#client_write_success), [`client_write_error`](/docs/reference/metrics#client_write_error) and
+        [`client_write_timeout`](/docs/reference/metrics#client_write_timeout) statistics.
+    - name: "delete"
+      description: |
+        Client delete transactions (S,E,T,N).
+        Also reported as the [`client_delete_success`](/docs/reference/metrics#client_delete_success), [`client_delete_error`](/docs/reference/metrics#client_delete_error),
+        [`client_delete_timeout`](/docs/reference/metrics#client_delete_timeout) and [`client_delete_not_found`](/docs/reference/metrics#client_delete_not_found) statistics.
+    - name: "udf"
+      description: |
+        Client UDF transactions (C,E,T). Refer to the `lang` stat breakdown
+        for the underlying operation statuses.
+        Also reported as the [`client_udf_complete`](/docs/reference/metrics#client_udf_complete), [`client_udf_error`](/docs/reference/metrics#client_udf_error) and
+        [`client_udf_timeout`](/docs/reference/metrics#client_udf_timeout) statistics.
+    - name: "lang"
+      description: |
+        Statistics for UDF operation statuses (R,W,D,E).
+        Also reported as the [`client_lang_read_success`](/docs/reference/metrics#client_lang_read_success), [`client_lang_write_success`](/docs/reference/metrics#client_lang_write_success),
+        [`client_lang_delete_success`](/docs/reference/metrics#client_lang_delete_success) and [`client_lang_error`](/docs/reference/metrics#client_lang_error) statistics.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.16.0.1"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace receiving write transactions from an XDR client.
+    XDR client transactions statistics. Will only be displayed after an XDR client transactions hit this namespace on this node.
+    The values on this line are a **subset** of the values displayed in the client statistics line just above in the log file.<br>
+    The following values define various actions which are displayed in the logs <br>
+    - S - success<br>
+    - E - error<br>
+    - T - timed out<br>
+    - N - not found, which for reads and deletes is a result that wants to be distinguished from success but is not an error<br>
+  message: |
+    {ns_name} xdr-client: write (1543,0,15) delete (134,0,3,25)
+  parameters:
+    - name: "write"
+      description: |
+        XDR client write transactions (S,E,T).
+        Also reported as the [`xdr_client_write_success`](/docs/reference/metrics#xdr_client_write_success), [`xdr_client_write_error`](/docs/reference/metrics#xdr_client_write_error) and
+        [`xdr_client_write_timeout`](/docs/reference/metrics#xdr_client_write_timeout) statistics.
+    - name: "delete"
+      description: |
+        XDR client delete transactions (S,E,T,N).
+        Also reported as the [`xdr_client_delete_success`](/docs/reference/metrics#xdr_client_delete_success), [`xdr_client_delete_error`](/docs/reference/metrics#xdr_client_delete_error),
+        [`xdr_client_delete_timeout`](/docs/reference/metrics#xdr_client_delete_timeout), and
+        [`xdr_client_delete_not_found`](/docs/reference/metrics#xdr_client_delete_not_found) statistics.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "4.5.1"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Basic proxied transactions statistics. Will only be displayed after proxied transactions hit this namespace on this node.<br>
+    The following values define various actions which are displayed in the logs <br>
+    - S - success<br>
+    - E - error<br>
+    - T - timed out<br>
+    - N - not found, which for reads and deletes is a result that wants to be distinguished from success but is not an error<br>
+    - A - aborted by user<br>
+    - C - complete, but success/failure indeterminate (e.g. UDFs can successfully send a "FAILURE" response bin)<br>
+    - R,W,D - successful UDF read, write, delete operation respectively
+  message: |
+    {ns_name} from-proxy: tsvc (0,0) read (105,0,1,7) write (2812,0,22) delete (188,0,1,16) udf (35,0,1) lang (26,7,0,3)
+  parameters:
+    - name: "tsvc"
+      description: |
+        Failures in the transaction service, before attempting to handle the transaction (E,T).
+        Also reported as the [`from_proxy_tsvc_error`](/docs/reference/metrics#from_proxy_tsvc_error) and
+        [`from_proxy_tsvc_timeout`](/docs/reference/metrics#from_proxy_tsvc_timeout) statistics.
+    - name: "read"
+      description: |
+        Proxied read transactions (S,E,T,N).
+        Also reported as the [`from_proxy_read_success`](/docs/reference/metrics#from_proxy_read_success), [`from_proxy_read_error`](/docs/reference/metrics#from_proxy_read_error),
+        [`from_proxy_read_timeout`](/docs/reference/metrics#from_proxy_read_timeout) and [`from_proxy_read_not_found`](/docs/reference/metrics#from_proxy_read_not_found) statistics.
+    - name: "write"
+      description: |
+        Proxied write transactions (S,E,T).
+        Also reported as the [`from_proxy_write_success`](/docs/reference/metrics#from_proxy_write_success), [`from_proxy_write_error`](/docs/reference/metrics#from_proxy_write_error) and
+        [`from_proxy_write_timeout`](/docs/reference/metrics#from_proxy_write_timeout) statistics.
+    - name: "delete"
+      description: |
+        Proxied delete transactions (S,E,T,N).
+        Also reported as the [`from_proxy_delete_success`](/docs/reference/metrics#from_proxy_delete_success), [`from_proxy_delete_error`](/docs/reference/metrics#from_proxy_delete_error),
+        [`from_proxy_delete_timeout`](/docs/reference/metrics#from_proxy_delete_timeout) and [`from_proxy_delete_not_found`](/docs/reference/metrics#from_proxy_delete_not_found) statistics.
+    - name: "udf"
+      description: |
+        Proxied UDF transactions (C,E,T). Refer to the `lang` stat breakdown
+        for the underlying operation statuses.
+        Also reported as the [`from_proxy_udf_complete`](/docs/reference/metrics#from_proxy_udf_complete), [`from_proxy_udf_error`](/docs/reference/metrics#from_proxy_udf_error) and
+        [`from_proxy_udf_timeout`](/docs/reference/metrics#from_proxy_udf_timeout) statistics.
+    - name: "lang"
+      description: |
+        Statistics for proxied UDF operation statuses (R,W,D,E).
+        Also reported as the [`from_proxy_lang_read_success`](/docs/reference/metrics#from_proxy_lang_read_success), [`from_proxy_lang_write_success`](/docs/reference/metrics#from_proxy_lang_write_success),
+        [`from_proxy_lang_delete_success`](/docs/reference/metrics#from_proxy_lang_delete_success) and [`from_proxy_lang_error`](/docs/reference/metrics#from_proxy_lang_error) statistics.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "4.5.1"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace receiving proxied write transactions from an XDR client.
+    Proxied XDR transactions statistics. Will only be displayed after a proxied XDR transaction hits this namespace on this node.
+    The values on this line are a **subset** of the values displayed in the from-proxy statistics line just above in the log file.<br>
+    The following values define various actions which are displayed in the logs <br>
+    - S - success<br>
+    - E - error<br>
+    - T - timed out<br>
+    - N - not found, which for reads and deletes is a result that wants to be distinguished from success but is not an error<br>
+  message: |
+    {ns_name} xdr-from-proxy: write (743,0,11) delete (104,0,3,21)
+  parameters:
+    - name: "write"
+      description: |
+        XDR client write transactions (S,E,T).
+        Also reported as the [`xdr_from_proxy_write_success`](/docs/reference/metrics#xdr_from_proxy_write_success), [`xdr_from_proxy_write_error`](/docs/reference/metrics#xdr_from_proxy_write_error) and
+        [`xdr_from_proxy_write_timeout`](/docs/reference/metrics#xdr_from_proxy_write_timeout) statistics.
+    - name: "delete"
+      description: |
+        XDR client delete transactions (S,E,T,N).
+        Also reported as the [`xdr_from_proxy_delete_success`](/docs/reference/metrics#xdr_from_proxy_delete_success), [`xdr_from_proxy_delete_error`](/docs/reference/metrics#xdr_from_proxy_delete_error),
+        [`xdr_from_proxy_delete_timeout`](/docs/reference/metrics#xdr_from_proxy_delete_timeout), and
+        [`xdr_from_proxy_delete_not_found`](/docs/reference/metrics#xdr_from_proxy_delete_not_found) statistics.
+
+- severity: "INFO"
+  introduced: "3.9"
+  context: "info"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Batch index transactions statistics. Will only be displayed after batch index transactions hit this namespace on this node.
+    There is no correlation possible between a parent batch-index
+    job status and its sub-transactions statuses. See the `batch-index` log entry for some details.
+  message: |
+    {ns_name} batch-sub: tsvc (0,0) proxy (0,0,0) read (768,0,0,41)
+  parameters:
+    - name: "tsvc"
+      description: |
+        Number of batch-index read sub transactions that failed in the transaction service (Error,Timed out).
+        Corresponds to the [`batch_sub_tsvc_error`](/docs/reference/metrics/#batch_sub_tsvc_error) and [`batch_sub_tsvc_timeout`](/docs/reference/metrics/#batch_sub_tsvc_timeout)
+        statistics.
+    - name: "proxy"
+      description: |
+        Number of proxied batch-index read sub transactions (Complete,Error,Timed out).
+        Corresponds to the [`batch_sub_proxy_complete`](/docs/reference/metrics/#batch_sub_proxy_complete), [`batch_sub_proxy_error`](/docs/reference/metrics/#batch_sub_proxy_error)
+        and [`batch_sub_proxy_timeout`](/docs/reference/metrics/#batch_sub_proxy_timeout) statistics.
+    - name: "read"
+      description: |
+        Number of batch-index read sub transactions (Success,Error,Timed out,Not found).
+        Corresponds to the [`batch_sub_read_success`](/docs/reference/metrics/#batch_sub_read_success), [`batch_sub_read_error`](/docs/reference/metrics/#batch_sub_read_error),
+        [`batch_sub_read_timeout`](/docs/reference/metrics/#batch_sub_read_timeout) and [`batch_sub_read_not_found`](/docs/reference/metrics/#batch_sub_read_not_found) statistics.
+
+- severity: "INFO"
+  introduced: "4.5.1"
+  context: "info"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Proxied batch index transactions statistics. Will only be displayed after proxied batch index transactions hit this namespace on this node.
+    There is no correlation possible between a parent batch-index
+    job status and its sub-transactions statuses. See the `batch-index` log entry for some details.
+  message: |
+    {ns_name} from-proxy-batch-sub: tsvc (0,0) read (728,0,0,37)
+  parameters:
+    - name: "tsvc"
+      description: |
+        Number of proxied batch-index read sub transactions that failed in the transaction service (Error,Timed out).
+        Corresponds to the [`from_proxy_batch_sub_tsvc_error`](/docs/reference/metrics/#from_proxy_batch_sub_tsvc_error) and
+         [`from_proxy_batch_sub_tsvc_timeout`](/docs/reference/metrics/#from_proxy_batch_sub_tsvc_timeout)
+        statistics.
+    - name: "read"
+      description: |
+        Number of proxied batch-index read sub transactions (Success,Error,Timed out,Not found).
+        Corresponds to the [`from_proxy_batch_sub_read_success`](/docs/reference/metrics/#from_proxy_batch_sub_read_success),
+        [`from_proxy_batch_sub_read_error`](/docs/reference/metrics/#from_proxy_batch_sub_read_error),
+        [`from_proxy_batch_sub_read_timeout`](/docs/reference/metrics/#from_proxy_batch_sub_read_timeout) and
+        [`from_proxy_batch_sub_read_not_found`](/docs/reference/metrics/#from_proxy_batch_sub_read_not_found) statistics.
+
+- severity: "INFO"
+  introduced: "3.9"
+  context: "info"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Scan transactions statistics. Will only be displayed after scan transactions hit this namespace on this node.
+  message: |
+    {ns_name} scan: basic (11,0,0) aggr (0,0,0) udf-bg (5,0,0)
+  parameters:
+    - name: "basic"
+      description: |
+        Number of scan jobs since the server started (Success,Error,Aborted).
+        Corresponds to the [`scan_basic_complete`](/docs/reference/metrics/#scan_basic_complete), [`scan_basic_error`](/docs/reference/metrics/#scan_basic_error)
+        and [`scan_basic_abort`](/docs/reference/metrics/#scan_basic_abort) statistics.
+    - name: "aggr"
+      description: |
+        Number of scan aggregation jobs since the server started (Success,Error,Aborted).
+        Corresponds to the [`scan_aggr_complete`](/docs/reference/metrics/#scan_aggr_complete), [`scan_aggr_error`](/docs/reference/metrics/#scan_aggr_error)
+        and [`scan_aggr_abort`](/docs/reference/metrics/#scan_aggr_abort) statistics.
+    - name: "udf-bg"
+      description: |
+        Number of scan background udf jobs since the server started (Success,Error,Aborted).
+        Corresponds to the [`scan_udf_bg_complete`](/docs/reference/metrics/#scan_udf_bg_complete), [`scan_udf_bg_error`](/docs/reference/metrics/#scan_udf_bg_error)
+        and [`scan_udf_bg_abort`](/docs/reference/metrics/#scan_basic_abort) statistics.
+
+- severity: "INFO"
+  introduced: "3.9"
+  context: "info"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Secondary index query transactions statistics. Will only be displayed after query transactions hit this namespace on this node.
+  message: |
+    {ns_name} query: basic (5,0) aggr (6,0) udf-bg (1,0)
+  parameters:
+    - name: "basic"
+      description: |
+        Number of secondary index queries since the server started (Success,Error).
+        Corresponds to the [`query_lookup_success`](/docs/reference/metrics/#query_lookup_success) and [`query_lookup_abort`](/docs/reference/metrics/#query_lookup_abort) statistics.
+    - name: "aggr"
+      description: |
+        Number of query aggregation jobs since the server started (Success,Error).
+        Corresponds to the [`query_aggr_success`](/docs/reference/metrics/#query_aggr_success) and [`query_aggr_abort`](/docs/reference/metrics/#query_aggr_abort) statistics.
+    - name: "udf-bg"
+      description: |
+        Number of query background udf jobs since the server started (Success,Error).
+        Corresponds to the [`query_udf_bg_success`](/docs/reference/metrics/#query_udf_bg_success) and [`query_udf_bg_abort`](/docs/reference/metrics/#query_udf_bg_abort) statistics.
+
+- severity: "INFO"
+  introduced: "3.9"
+  context: "info"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    UDF transactions statistics. Will only be displayed after UDF transactions hit this namespace on this node.
+  message: |
+    {ns_name} udf-sub: tsvc (0,0) udf (2651,0,0) lang (52,2498,101,0)
+  parameters:
+    - name: "tsvc"
+      description: |
+        Number of udf sub transactions of scan/query background udf jobs that failed in the transaction service (Error,Timed out).
+        Corresponds to the [`udf_sub_tsvc_error`](/docs/reference/metrics/#udf_sub_tsvc_error) and [`udf_sub_tsvc_timeout`](/docs/reference/metrics/#udf_sub_tsvc_timeout)
+        statistics.
+    - name: "udf"
+      description: |
+        Number of udf sub transactions of scan/query background udf jobs (Complete,Error,Timed out).
+        Corresponds to the [`udf_sub_udf_complete`](/docs/reference/metrics/#udf_sub_udf_complete), [`udf_sub_udf_error`](/docs/reference/metrics/#udf_sub_udf_error)
+        and [`udf_sub_udf_timeout`](/docs/reference/metrics/#udf_sub_udf_timeout) statistics.
+    - name: "lang"
+      description: |
+        Different status counts for underlying udf operations for sub transactions of scan/query background udf jobs (Read,Write,Delete,Error).
+        Corresponds to the [`udf_sub_lang_read_success`](/docs/reference/metrics/#udf_sub_lang_read_success), [`udf_sub_lang_write_success`](/docs/reference/metrics/#udf_sub_lang_write_success),
+        [`udf_sub_lang_delete_success`](/docs/reference/metrics/#udf_sub_lang_delete_success) and [`udf_sub_lang_error`](/docs/reference/metrics/#udf_sub_lang_error) statistics.
+
+- severity: "INFO"
+  introduced: "3.10.1"
+  removed: "4.5.1"
+  context: "info"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Retransmit statistics. Will only be displayed if any retransmit has taken place.
+  message: |
+    {ns_name} retransmits: migration 0 client-read 0 client-write (0,1) client-delete (0,0) client-udf (0,0) batch-sub 0 udf-sub (0,0) nsup 0
+  parameters:
+    - name: "migration"
+      description: |
+        Number of retransmits that occurred during migrations. Corresponds to the `migrate_record_retransmits` statistic.
+    - name: "client-read"
+      description: |
+        Number of retransmits that occurred during read transactions (that were being duplicate resolved). Corresponds to the `retransmit_client_read_dup_res` statistic.
+    - name: "client-write"
+      description: |
+        Number of retransmits that occurred during write transactions (that were being duplicate resolved, and replica written respectively). Corresponds to the
+        `retransmit_client_write_dup_res` and `retransmit_client_write_repl_write` statistics.
+    - name: "client-delete"
+      description: |
+        Number of retransmits that occurred during delete transactions (that were being duplicate resolved, and replica written respectively). Corresponds to the
+        `retransmit_client_delete_dup_res` and `retransmit_client_delete_repl_write` statistics.
+    - name: "client-udf"
+      description: |
+        Number of retransmits that occurred during client initiated udf transactions (that were being duplicate resolved, and replica written respectively). Corresponds to the
+        `retransmit_client_udf_dup_res` and `retransmit_client_udf_repl_write` statistics.
+    - name: "batch-sub"
+      description: |
+        Number of retransmits that occurred during batch sub transactions (that were being duplicate resolved). Corresponds to the `retransmit_batch_sub_dup_res` statistic.
+    - name: "udf-sub"
+      description: |
+        Number of retransmits that occurred during udf sub transactions of scan/query background udf jobs (that were being duplicate resolved, and replica written respectively).
+        Corresponds to the `retransmit_udf_sub_dup_res` and `retransmit_udf_sub_repl_write` statistics.
+    - name: "nsup"
+      description: |
+        Number of retransmits that occurred during nsup initiated delete transactions (that were being replica written). Corresponds to the `retransmit_nsup_repl_write` statistic.
+
+- severity: "INFO"
+  introduced: "4.5.1"
+  context: "info"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Retransmit statistics. Will only be displayed if any retransmit has taken place.
+  message: |
+    {ns_name} retransmits: migration 0 all-read 0 all-write (0,1) all-delete (0,0) all-udf (0,0) all-batch-sub 0 udf-sub (0,0)
+  parameters:
+    - name: "migration"
+      description: |
+        Number of retransmits that occurred during migrations. Corresponds to the `migrate_record_retransmits` statistic.
+    - name: "all-read"
+      description: |
+        Number of retransmits that occurred during read transactions (that were being duplicate resolved). Corresponds to the `retransmit_all_read_dup_res` statistic.
+    - name: "all-write"
+      description: |
+        Number of retransmits that occurred during write transactions (that were being duplicate resolved, and replica written respectively). Corresponds to the
+        `retransmit_all_write_dup_res` and `retransmit_all_write_repl_write` statistics.
+    - name: "all-delete"
+      description: |
+        Number of retransmits that occurred during delete transactions (that were being duplicate resolved, and replica written respectively). Corresponds to the
+        `retransmit_all_delete_dup_res` and `retransmit_all_delete_repl_write` statistics.
+    - name: "all-udf"
+      description: |
+        Number of retransmits that occurred during udf transactions (that were being duplicate resolved, and replica written respectively). Corresponds to the
+        `retransmit_all_udf_dup_res` and `retransmit_all_udf_repl_write` statistics.
+    - name: "all-batch-sub"
+      description: |
+        Number of retransmits that occurred during batch sub transactions (that were being duplicate resolved). Corresponds to the `retransmit_all_batch_sub_dup_res` statistic.
+    - name: "udf-sub"
+      description: |
+        Number of retransmits that occurred during udf sub transactions of scan/query background udf jobs (that were being duplicate resolved, and replica written respectively).
+        Corresponds to the `retransmit_udf_sub_dup_res` and `retransmit_udf_sub_repl_write` statistics.
+
+- severity: "INFO"
+  introduced: "3.16.0.1"
+  context: "info"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    Special errors statistics. Will only be displayed if any of those errors have occurred.
+  message: |
+    {ns_name} special-errors: key-busy 1234 record-too-big 5678
+  parameters:
+    - name: "key-busy"
+      description: |
+        Number of key busy errors. Corresponds to the [`fail_key_busy`](/docs/reference/metrics#fail_key_busy) statistic.
+    - name: "record-too-big"
+      description: |
+        Number of record too big errors. Corresponds to the [`fail_record_too_big`](/docs/reference/metrics#fail_record_too_big) statistic.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.9"
+  message: |
+    histogram dump: {ns-name}-{hist-name} (1344911766 total) msec
+    (00: 1262539302) (01: 0049561831) (02: 0013431778) (03: 0007273116)
+    (04: 0004299011) (05: 0003086466) (06: 0002182478) (07: 0001854797)
+    (08: 0000312272) (09: 0000370715)
+  occurs: |
+    Periodically printed to the logs (every 10 seconds by default).
+  parameters:
+    - name: "histogram dump"
+      description: |
+        Name of the histogram to follow for the {ns-name} namespace
+    - name: "total"
+      description: |
+        Number of data points represented by this histogram (since the server started)
+    - name: "N"
+      description: |
+        Number of data points within units (e.g. msec or bytes) greater than 2<sup>(N-1)</sup> and less 
+        than 2<sup>N</sup> for N>0, between 0 and 1 for N=0
+  description: |
+    In the above example, 05:0003086466 implies 3,086,466 data points took between 16 and 32 msec. 
+    Additional histograms can be accessed by enabling microbenchmarks and/or
+    storage-benchmarks statically or dynamically in the service context of the
+    configuration. See the [Monitoring latencies](/docs/operations/monitor/latency/)
+    page for monitoring latencies and details about the histograms.
+
+  ################################################################################
+  # hb context log messages
+  ################################################################################
+
+- severity: "WARNING"
+  context: "hb"
+  occurs: |
+    When a node expected to be part of the cluster cannot be reached on the heartbeat port
+  message: |
+    could not create heartbeat connection to node {IP:port}
+  parameters:
+    - name: "IP:port"
+      description: |
+        IP and heartbeat port of the host that could not be reached
+  description: |
+    This can indicate that a node of the cluster is down, or that the IPs of the cluster have changed
+    (eg, a cloud cluster has been restacked). If the indicated node is expected to be part of the cluster,
+    [troubleshoot](/docs/operations/troubleshoot/index.html) as normal, but if not, follow the
+    [`tip-clear`](/docs/reference/info/index.html#tip-clear) and
+    [`services-alumni-reset`](/docs/reference/info/index.html#services-alumni-reset) steps from the
+    [node removal instructions](/docs/operations/manage/cluster_mng/removing_node/) to clear the errors.
+
+
+  ################################################################################
+  # nsup context log messages
+  ################################################################################
+
+- severity: "INFO"
+  context: "nsup"
+  removed: "4.5.1"
+  occurs: |
+    Information logged when the namespace supervisor (nsup) starts for a given namespace.
+  message: |
+    {ns-name} nsup-start
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "4.5.1"
+  removed: "4.6.0"
+  occurs: |
+    Logged when the namespace supervisor (nsup) begins expiration processing for a namespace.
+  message: |
+    {ns-name} nsup-start: expire
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "4.6.0"
+  occurs: |
+    Logged when the namespace supervisor (nsup) begins expiration processing for a namespace.
+  message: |
+    {ns-name} nsup-start: expire-threads 1
+  parameters:
+    - name: "expire-threads"
+      description: |
+        The number of threads to be used for the expiration processing cycle. Corresponds to the configured 
+        [`nsup-threads`](/docs/reference/configuration/index.html?show-removed=1#nsup-threads).
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "4.5.1"
+  removed: "4.6.0"
+  occurs: |
+    Logged when the namespace supervisor (nsup) begins eviction processing for a namespace.
+  message: |
+    {ns-name} nsup-start: evict-ttl 2745 evict-void-time (287665530,287665930)
+  parameters:
+    - name: "evict-ttl"
+      description: |
+        The specified eviction depth for the namespace, expressed as a time to live threshold in seconds,
+        below which any eligible records will be evicted.
+    - name: "evict-void-time"
+      description: |
+        The current effective eviction depth and the specified eviction depth for the namespace.
+        Each is expressed as a void time, in seconds since 1 January 2010 UTC.
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "4.6.0"
+  occurs: |
+    Logged when the namespace supervisor (nsup) begins eviction processing for a namespace.
+  message: |
+    {ns-name} nsup-start: evict-threads 1 evict-ttl 2745 evict-void-time (287665530,287665930)
+  parameters:
+    - name: "evict-threads"
+      description: |
+        The number of threads to be used for the eviction processing cycle.
+    - name: "evict-ttl"
+      description: |
+        The specified eviction depth for the namespace, expressed as a time to live threshold in seconds,
+        below which any eligible records will be evicted.
+    - name: "evict-void-time"
+      description: |
+        The current effective eviction depth and the specified eviction depth for the namespace.
+        Each is expressed as a void time, in seconds since 1 January 2010 UTC.
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "4.5.1"
+  message: |
+    {ns-name} nsup-done: non-expirable 42162 expired (576066,922) evicted (24000935,259985) evict-ttl 134000 total-ms 155
+  occurs: |
+    Logged when the namespace supervisor (nsup) completes expiration or eviction processing for a namespace.
+    See the most recently logged `nsup-start` entry for the namespace to determine which type of processing has just completed.
+    Also note that expiration processing will never evict records, but eviction processing can expire records.
+  parameters:
+    - name: "non-expirable"
+      description: |
+        The number of records without a TTL.  These records do not expire and will never be eligible for eviction.
+    - name: "expired"
+      description: |
+        Number of records removed due to expiration; total since the node started and total for the current nsup cycle.
+        In this example, 922 records expired in the most recent nsup cycle, and 576066 records have expired since the node was last started.
+    - name: "evicted"
+      description: |
+        Number of records evicted (early-expired); total since the node started and total for the current nsup cycle. In this example,
+        nsup evicted 259985 records in the most recent cycle, and 24000935 records since the node was last started.
+    - name: "evict-ttl"
+      description: |
+        The high-end expiration-time of evicted (early-expired) records (in seconds).
+    - name: "total-ms"
+      description: |
+        Duration of the just completed nsup expiration or eviction processing cycle, in milliseconds.
+        In this example, the processing cycle completed in 155 milliseconds
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "3.14"
+  removed: "4.5.1"
+  message: |
+    {ns-name} nsup-done: master-objects (638101,45630) expired (576066,922) evicted (24000935,259985) evict-ttl 0 waits (0,0) total-ms 155
+  occurs: |
+    Information logged after the namespace supervisor (nsup) completed a run for a namespace.
+  parameters:
+    - name: "master-objects"
+      description: |
+        Number of records scanned in the most recent nsup cycle. In this example, nsup scanned 638101 records. The second number
+        is the number of records without TTL (those will never expire and will not be eligible for eviction).
+    - name: "expired"
+      description: |
+        Number of records removed due to expiration, total since the node started and for the current nsup cycle.
+        In this example, 922 records expired in the most recent nsup cycle, and 576066 records have expired since the node was last started.
+    - name: "evicted"
+      description: |
+        Number of records evicted (early-expired), total since the node started and for the current nsup cycle. In this example,
+        nsup evicted 259985 records in the most recent cycle, and 24000935 records since the node was last started.
+    - name: "evict-ttl"
+      description: |
+        The high-end expiration-time of evicted (early-expired) records (in seconds).
+    - name: "waits"
+      description: |
+        Accumulated waiting time for different stages of deletes to finish, in milliseconds. In order:
+         - n_general_waits: the number of milliseconds nsup slept during general expiration and eviction
+         while waiting for the nsup-delete-queue to drop to 10,000 elements or less (throttling).<br>
+         - n_clear_waits: the number of milliseconds until the nsup-delete-queue has cleared, at the end of the cycle for the current namespace.<br>
+    - name: "total-ms"
+      description: |
+        Duration of the most recent nsup cycle, in milliseconds. In this example, the nsup cycle completed in 155 milliseconds
+
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "3.8"
+  removed: "3.14"
+  message: |
+    {ns-name} Records: 638101, 0 0-vt, 922(576066) expired, 259985(24000935) evicted, 0(0) set deletes. Evict ttl: 0. Waits: 0,0,0. Total time: 155 ms
+  occurs: |
+    Information logged after the namespace supervisor (nsup) completed a run for a namespace.
+    Values in parenthesis indicate cumulative count, instead of current-cycle count.
+  parameters:
+    - name: "Records"
+      description: |
+        Number of records scanned in the most recent nsup cycle. In this example, nsup scanned 638101 records.
+    - name: "0-vt"
+      description: |
+        Number of records without TTL.
+    - name: "expired"
+      description: |
+        Number of records removed due to expiration. In this example, 922 records expired in the most recent nsup cycle, and 576066 records have expired since the node was last started.
+    - name: "evicted"
+      description: |
+        Number of records early-expired. In this example, nsup evicted 259985 records in the most recent cycle, and 24000935 records since the node was last started.
+    - name: "set deletes"
+      description: |
+        If a set-delete command was issued, number of records deleted.
+    - name: "Evict ttl"
+      description: |
+        The high-end expiration-time of early-expired records (in seconds).
+    - name: "Waits"
+      description: |
+        Accumulated waiting time for different stages of delete to finish, in milliseconds. In each cycle, nsup performs set-deletes before general expiration and eviction. <br>
+        - n_set_waits: The first wait is the number of milliseconds that nsup slept during set-deletes stage while waiting for the nsup-delete-queue to drop to 10,000 elements or less (Throttling).<br>
+        - n_clear_waits: The second wait is the number of milliseconds until the nsup-delete-queue cleared (including the previous namespace if applicable) before beginning general expiration and eviction
+        (Minimize unnecessary eviction if deletes already pending). For the last namespace in the nsup cycle, this is reported on its own line, `nsup clear waits: 1441`<br>
+        - n_general_waits: The third wait is the number of milliseconds nsup slept during general expiration and eviction while waiting for the nsup-delete-queue to drop to 10,000 elements or less (Throttling).<br>
+    - name: "Total time"
+      description: |
+        Duration of the most recent nsup cycle, in milliseconds. In this example, the nsup cycle completed in 155 milliseconds.
+
+- severity: "INFO"
+  context: "nsup"
+  removed: "3.8"
+  message: |
+    {ns-name} Records: 37118670, 0 0-vt, 0(377102877) expired, 185677(145304222) evicted, 0(0) set deletes, 0(0) set evicted. Evict ttls: 34560,38880,0.118. Waits: 0,0,8743. Total time: 45467 ms
+  occurs: |
+    Information logged after the namespace supervisor (nsup) completed a run for a namespace.
+    Values in parenthesis indicate cumulative count, instead of current-cycle count.
+  parameters:
+    - name: "Records"
+      description: |
+        Number of records scanned in the most recent nsup cycle. In this example, nsup scanned 37118670 records
+    - name: "0-vt"
+      description: |
+        Number of records without TTL
+    - name: "expired"
+      description: |
+        Number of records removed due to expiration. In this example, no records expired in the most recent nsup cycle, and 377102877 records have expired since the node was last started
+    - name: "evicted"
+      description: |
+        Number of records early-expired. In this example, nsup evicted 185677 records in the most recent cycle, and 145304222 records since the node was last started
+    - name: "set deletes"
+      description: |
+        If a set-delete command was issued, number of records deleted
+    - name: "set evicted"
+      description: |
+        If a set-eviction watermark is set, number of records early-expired
+    - name: "Evict ttls"
+      description: |
+        The low-end and high-end expiration-time of early-expired records (in seconds) followed by the percentage of records evicted in the partially evicted bucket (within which evictions are random).
+        In this example, the evicted records would have expired naturally within the next 34560 to 38880 seconds. Nsup evicted 0.118 percent of the records in the last (partial) bucket that it had to go through.
+    - name: "Waits"
+      description: |
+        Accumulated waiting time for different stages of delete to finish, in microseconds. In each cycle, nsup performs set-deletes before general expiration and eviction. <br>
+        - n_set_waits: The first wait is the number of microseconds that nsup slept during set-deletes stage while waiting for the nsup-delete-queue to drop to 10,000 elements or less (Throttling).<br>
+        - n_clear_waits: The second wait is the number of microseconds until the nsup-delete-queue cleared (including the previous namespace if applicable) before beginning general expiration and eviction
+        (Minimize unnecessary eviction if deletes already pending). For the last namespace in the nsup cycle, this is reported on its own line, `nsup clear waits: 1441`<br>
+        - n_general_waits: The third wait is the number of microseconds nsup slept during general expiration and eviction while waiting for the nsup-delete-queue to drop to 10,000 elements or less (Throttling).<br>
+    - name: "Total time"
+      description: |
+        Duration of the most recent nsup cycle, in milliseconds. In this example, the nsup cycle completed in 45467 milliseconds
+
+- severity: "INFO"
+  context: "nsup"
+  removed: "3.14"
+  message: |
+    nsup clear waits: 1441
+  occurs: |
+    Information logged after the namespace supervisor (nsup) completed a full cycle (for all namespaces).
+  parameters:
+    - name: "clear waits"
+      description: |
+        Number of microseconds until the nsup-delete-queue cleared from the deletes in the last namespace in the cycle. This is also printed as part of each namespace runs
+        as the second number for `Waits` in the per namespace nsup completion log entry.
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "3.14.0"
+  removed: "4.6.0"
+  message: |
+    {ns-name} sindex-gc start
+  occurs: |
+    Starting secondary index (sindex) garbage collection.
+    Replaced by "sindex-gc-start" message in 4.6.0.
+
+- severity: "INFO"
+  context: "nsup"
+  introduced: "3.14.0"
+  removed: "4.6.0"
+  message: |
+    {ns-name} sindex-gc: Processed: 3133360101, found:365961945, deleted: 365952323: Total time: 62667962 ms
+  occurs: |
+    Secondary index (sindex) garbage collection cycle summary.
+    Replaced by "sindex-gc-done" message in 4.6.0.
+  parameters:
+    - name: "Processed"
+      description: |
+        Count of sindex entries that have been checked. Corresponds to the [`sindex_gc_objects_validated`](/docs/reference/metrics/index.html#sindex_gc_objects_validated) statistic.
+    - name: "found"
+      description: |
+        Count of sindex entries found eligible for garbage collection. Corresponds to the [`sindex_gc_garbage_found`](/docs/reference/metrics/index.html#sindex_gc_garbage_found) statistic.
+    - name: "deleted"
+      description: |
+        Count of sindex entries deleted through garbage collection (may be lower than 
+        above number if those entries got deleted while the garbage collector was running, 
+        for example through a competing truncate command). Corresponds to the [`sindex_gc_garbage_cleaned`](/docs/reference/metrics/index.html#sindex_gc_garbage_cleaned) statistic.
+    - name: "Total time"
+      description:
+        Duration of a cycle of sindex garbage collection in milliseconds. 
+
+- severity: "WARNING"
+  context: "nsup"
+  message: |
+    {ns-name} breached eviction hwm (memory), memory sz:18043661211 (1235879488 + 40166892 + 16767614831) hwm:18038862643, index-device sz:0 hwm:0, disk sz:18024160016 hwm:64424509440
+  occurs: |
+    Checking memory or disk usage at start of nsup cycle and finding that the high-water mark has been breached
+  parameters:
+    - name: "high-water mark"
+      description: |
+        `memory` or `disk` depending on which high water mark was breached
+    - name: "memory"
+      description: |
+        Memory used in bytes (primary index + secondary indexes + data in memory), and the amount of the high-water mark (total available \* [`high-water-memory-pct`](/docs/reference/configuration/index.html#high-water-memory-pct)
+    - name: "index-device"
+      description: |
+        Used space on device for `index-type flash` in bytes and the amount of the high-water mark (total available \* [`mounts-high-water-pct`](/docs/reference/configuration/index.html#mounts-high-water-pct)
+    - name: "disk"
+      description: |
+        Disk space used in bytes and the amount of the high-water mark (total available \* [`high-water-disk-pct`](/docs/reference/configuration/index.html#high-water-disk-pct)
+
+- severity: "WARNING"
+  context: "nsup"
+  message: |
+    {test} no records below eviction void-time 329702784 - threshold bucket 9998, width 3154 sec, count 4000000 > target 20000 (0.5 pct)
+  occurs: |
+    Checking the eviction buckets from the bottom up, but there are no records found until one bucket has enough to put the total over the limit for one eviction cycle
+  parameters:
+    - name: "void-time"
+      description: |
+        Timestamp at the top of the bucket that breached the eviction limit
+    - name: "threshold bucket"
+      description: |
+        Which bucket out of the [`evict-hist-buckets`](https://www.aerospike.com/docs/reference/configuration/index.html#evict-hist-buckets) breached the eviction limit
+    - name: "width"
+      description: |
+        Width of the bucket in seconds
+    - name: "count"
+      description: |
+        Total records found in this bucket
+    - name: "target"
+      description: |
+        Number of records allowed for this eviction cycle and the [`evict-tenths-pct`](https://www.aerospike.com/docs/reference/configuration/index.html#evict-tenths-pct) used to calculate it
+
+
+  ################################################################################
+  # batch context log messages
+  ################################################################################
+
+
+- severity: "WARNING"
+  context: "batch"
+  introduced: "4.1"
+  message: |
+    abandoned batch from 11.22.33.44 with 23 transactions after 30000 ms.
+  occurs: |
+    When a batch-index transaction is abandoned due to one or more delays pushing its total time above the allowed threshold. This
+    threshold is either twice the client total timeout or 30 second if the timeout is not set on the client. Each occurrence will also
+    increment the [`batch_index_error`](/docs/reference/metrics#batch_index_error) statistic.
+  parameters:
+    - name: "(IP Address)"
+      description: |
+        The client originating IP address for the transaction.
+    - name: "(Number of transactions)"
+      description: |
+        The number of batch sub transactions in the impacted batch index transaction.
+    - name: "(Abandoned time)"
+      description: |
+        The total time the batch index transaction has been running before being abandoned.
+
+  ################################################################################
+  # truncate context log messages
+  ################################################################################
+
+
+- severity: "INFO"
+  context: "truncate"
+  introduced: "3.12"
+  message: |
+    {ns-name|set-name} got command to truncate to now (226886718769)
+  occurs: |
+    Truncate command received. Will only appear on the node to which the info command was issued.
+    The command is distributed to other nodes via system metadata (SMD), and only the
+    truncating/starting/restarting/truncated/done log entries will appear on those nodes.
+  parameters:
+    - name: "(timestamp)"
+      description: |
+        The lut time in milliseconds since the Citrusleaf epoch (00:00:00 UTC on 1 Jan 2010).
+
+- severity: "INFO"
+  context: "truncate"
+  introduced: "3.12"
+  message: |
+    {ns-name|set-name} truncating to 226886718769
+  occurs: |
+    Truncate command received. Will appear on all the nodes after a truncate command is issued.
+  parameters:
+    - name: "timestamp"
+      description: |
+        The lut time in milliseconds since the Citrusleaf epoch (00:00:00 UTC on 1 Jan 2010).
+
+- severity: "INFO"
+  context: "truncate"
+  introduced: "3.12"
+  message: |
+    {ns-name} starting truncate
+  occurs: |
+    Truncate command being processed for the namespace.
+
+- severity: "INFO"
+  context: "truncate"
+  introduced: "3.12"
+  message: |
+    {ns-name} truncated records (10,50)
+  occurs: |
+    Truncate command being processed for the namespace.
+  parameters:
+    - name: "(current,total)"
+      description: |
+        Current truncation count (10 in this example) followed by the total number of records have
+        been deleted by truncation since the server started (50 in this example). Those counts
+        are only kept at the namespace level.
+
+- severity: "INFO"
+  context: "truncate"
+  introduced: "3.12"
+  message: |
+    {ns-name} done truncate
+  occurs: |
+    Truncate command completed.
+
+
+- severity: "INFO"
+  context: "truncate"
+  introduced: "4.3.1.11, 4.4.0.11, 4.5.0.6, 4.5.1.5"
+  message: |
+    {ns-name|set-name} undoing truncate - was to 226886718769
+  occurs: |
+    Truncate command undone.
+
+
+- severity: "INFO"
+  context: "truncate"
+  introduced: "3.12"
+  message: |
+    {ns-name} flagging truncate to restart
+  occurs: |   
+    This log line indicates that another truncation pass through the namespace will be required once the current pass has completed. 
+    Truncation can act on more than one set at a time, therefore, if a truncate command is received for a set in a namespace that is 
+    currently already going through truncation (for a different set for example), a subsequent iteration would be required.
+    For example, consider a scenario where a truncate against set s2 is ongoing when a truncate command against set s4 is triggered. 
+    In this case, from the moment the log message appears (when the command to truncate against set4 is issued), 
+    both set2 and set4 will be truncated together until the end of the current pass. Then truncation will restart 
+    another pass through the namespace, so that the rest of set4 gets truncated.
+
+  ################################################################################
+  # sindex context log messages
+  ################################################################################
+
+
+- severity: "INFO"
+  context: "sindex"
+  message: |
+    Sindex-ticker: ns=ns-name si=&lt;all&gt; obj-scanned=500000 si-mem-used=47913 progress= 2% est-time=2336995 ms
+  occurs: |
+    Information logged at startup when secondary indices are being rebuilt.
+  parameters:
+    - name: "ns"
+      description: |
+        Namespace name.
+    - name: "si"
+      description: |
+        Secondary indexes being rebuilt.
+    - name: "obj-scanned"
+      description: |
+        Number of objects scanned.
+    - name: "si-mem-used"
+      description: |
+        Memory used by the secondary indices.
+    - name: "progress"
+      description: |
+        Progress in percent.
+    - name: "est-time"
+      description: |
+        Estimated remaining time in millisecond for the secondary indices to be fully rebuilt.
+
+- severity: "INFO"
+  context: "sindex"
+  introduced: "4.6.0"
+  message: |
+    {ns-name} sindex-gc-start
+  occurs: |
+    Starting secondary index (sindex) garbage collection.
+
+- severity: "INFO"
+  context: "sindex"
+  introduced: "4.6.0"
+  message: |
+    {ns-name} sindex-gc-done: processed 3133360101 found 365961945 deleted 365952323 total-ms 62667962
+  occurs: |
+    Secondary index (sindex) garbage collection cycle summary.
+  parameters:
+    - name: "processed"
+      description: |
+        Count of sindex entries that have been checked. Corresponds to the [`sindex_gc_objects_validated`](/docs/reference/metrics/index.html#sindex_gc_objects_validated) statistic.
+    - name: "found"
+      description: |
+        Count of sindex entries found eligible for garbage collection. Corresponds to the [`sindex_gc_garbage_found`](/docs/reference/metrics/index.html#sindex_gc_garbage_found) statistic.
+    - name: "deleted"
+      description: |
+        Count of sindex entries deleted through garbage collection (may be lower than
+        above number if those entries got deleted while the garbage collector was running,
+        for example through a competing truncate command). Corresponds to the [`sindex_gc_garbage_cleaned`](/docs/reference/metrics/index.html#sindex_gc_garbage_cleaned) statistic.
+    - name: "total-ms"
+      description:
+        Duration of the sindex garbage collection cycle in milliseconds.
+
+
+  ################################################################################
+  # xdr context log messages
+  ################################################################################
+
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.9"
+  message: |
+    summary: throughput 3722 inflight 164 dlog-outstanding 100 dlog-delta-per-sec -10.0
+  parameters:
+    - name: "throughput"
+      description: |
+        The current throughput, shipping to destination cluster(s). When shipping to multiple clusters
+        the throughput will represent the combined throughput to all destination clusters.
+        Corresponds to the [`xdr_throughput`](/docs/reference/metrics/#xdr_throughput) statistic.
+    - name: "inflight"
+      description: |
+        The number of records that are inflight, meaning that have been sent to the destination cluster(s)
+        but for which a response has not been received yet. Corresponds to the
+        [`xdr_ship_inflight_objects`](/docs/reference/metrics/#xdr_ship_inflight_objects) statistic.
+    - name: "dlog-outstanding"
+      description: |
+        The number of record's digests yet to be processed in the digest log. In parenthesis, the
+        average change normalized to digests per second (over the 10 seconds interval separating those log lines).
+        Corresponds to the [`xdr_ship_outstanding_objects`](/docs/reference/metrics#xdr_ship_outstanding_objects) statistic.
+    - name: "dlog-delta-per-sec"
+      description: |
+        The variation of the dlog-outstanding normalized on a per second basis. Gives an idea whether the number of entries
+        in the digestlog is increasing or decreasing over time and at what pace.
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.9"
+  message: |
+    detail: sh 5588691 ul 12 lg 11162298 rlg 54 rlgi 0 rlgo 54 lproc 11162198 rproc 45 lkdproc 0 errcl 54 errsrv 0 hkskip 6303 hkf 6299 flat 0
+  parameters:
+    - name: "sh"
+      description: |
+        The cumulative number of records that have been attempted to be shipped since this node started, across
+        all datacenters. If a record is shipped to 3 different data centers, then this number will increment by 3.
+        Corresponds to the sum of the [`xdr_ship_success`](/docs/reference/metrics#xdr_ship_success), [`xdr_ship_source_error`](/docs/reference/metrics#xdr_ship_source_error)
+        and [`xdr_ship_destination_error`](/docs/reference/metrics#xdr_ship_destination_error) statistics.
+    - name: "ul"
+      description: |
+        The number of record's digests that have been written to the node but not logged yet to the digestlog (unlogged).
+    - name: "lg"
+      description: |
+        The number of record's digests that have been logged this includes both master and replica records
+        but a node only ships records for which it owns the master partition and will process records belonging to its
+        replica partitions only when a neighboring source node goes down.
+    - name: "rlog"
+      description: |
+        Relogged digests. The number of record's digests that have been relogged on this node due to temporary failures when attempting
+        to ship. Corresponds to the [`dlog_relogged`](/docs/reference/metrics#dlog_relogged) statistic.
+    - name: "rlgi"
+      description: |
+        Relogged incoming digests.
+        The number of record's digest that another node sent to this node (typically prole side relog or
+        partition ownership change).
+        Corresponds to the [`xdr_relogged_incoming`](/docs/reference/metrics#xdr_relogged_incoming) statistic.
+    - name: "rlgo"
+      description: |
+        Relogged outgoing digests.
+        The number of record's digest log entries that were sent to another node (typically prole side relog or
+        partition ownership change).
+        Corresponds to the [`xdr_relogged_outgoing`](/docs/reference/metrics#xdr_relogged_outgoing) statistic.
+    - name: "lproc"
+      description: |
+        The number of record's digests that have been processed locally. A processed digest does not necessarily
+        imply a shipped record (for example, replica digests don't get shipped unless a source node is down,
+        and hotkeys also don't have all their updates necessarily shipped). Corresponds to the [`dlog_processed_main`](/docs/reference/metrics#dlog_processed_main)
+        statistics.
+    - name: "rproc"
+      description: |
+        The number of replica record's digests that have been processed by this node. A node will process records belonging to its
+        replica partitions only when a neighboring source node goes down. Corresponds to the [`dlog_processed_replica`](/docs/reference/metrics#dlog_processed_replica)
+        statistic.
+    - name: "lkdproc"
+      description: |
+        The number of record's digests that have been processed as part of a linked down session. A link down session is
+        spawned when a full destination cluster is down or not reachable. Corresponds to the [`dlog_processed_linkdown`](/docs/reference/metrics#dlog_processed_linkdown) statistic.
+    - name: "errcl"
+      description: |
+        The number of errors encountered when attempting to ship due to the embedded client. For example, if
+        the local XDR embedded client is having issues or delays in establishing connections.
+        Corresponds to the [`xdr_ship_source_error`](/docs/reference/metrics#xdr_ship_source_error) statistic.
+    - name: "errsrv"
+      description: |
+        The number of errors encountered when attempting to ship due to the destination cluster. For example if
+        the destination cluster is temporarily overloaded. Corresponds to the [`xdr_ship_destination_error`](/docs/reference/metrics#xdr_ship_destination_error) statistic.
+    - name: "hkskip"
+      description: |
+        Hotkey skipped. Represents the number of record's digests that are skipped due to an already existing entry
+        in the reader's thread cache (meaning a version of this record was just shipped).
+        Corresponds to the [xdr_hotkey_skip](/docs/reference/metrics#xdr_hotkey_skip) statistic.
+    - name: "hkf"
+      description: |
+        Hotkey fetched. Represents the number of record's digest that
+        are actually fetched and shipped because their cache entries expired and were dirty.
+        Corresponds to the [xdr_hotkey_fetch](/docs/reference/metrics#xdr_hotkey_fetch) statistics.
+    - name: "flat"
+      description: |
+        The average time in milliseconds to fetch records locally (this is an exponential moving average - 95/5).
+        Corresponds to the [`xdr_read_latency_avg`](/docs/reference/metrics#xdr_read_latency_avg) statistic.
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.9"
+  message: |
+    [DC_NAME]: dc-state CLUSTER_UP timelag-sec 2 lst 1468006386894 mlst 1468006389647 (2016-07-08 19:33:09.647 GMT) fnlst 0 (-) wslst 0 (-) shlat-ms 0 rsas-ms 0.004 rsas-pct 0.0 con 384 errcl 0 errsrv 0 sz 6
+  occurs: |
+    Every 1 minute, for each configured destination cluster (or DC).
+  parameters:
+    - name: "[DC_NAME]"
+      description: |
+        Name and status of the DC. Here are the different statuses: CLUSTER_INACTIVE, CLUSTER_UP,
+        CLUSTER_DOWN, CLUSTER_WINDOW_SHIP. Corresponds to the `dc_state` statistic.
+    - name: "timelag-sec"
+      description: |
+        The lag in seconds. This is computed as the difference between the current time and the time-stamp
+        of the record that was last successfully shipped. This provides a sense of how 'far behind' the
+        destination cluster lags behind the source cluster. This does not correspond to the time it will take
+        the source cluster to 'catch up', neither does it necessarily relates to the number of outstanding
+        digests to be processed. Corresponds to the [`dc_timelag`](/docs/reference/metrics#dc_timelag) statistic.
+    - name: "lst"
+      description: |
+        The overall last ship time for the node (the minimum of all last ship times on this node).
+    - name: "mlst"
+      description: |
+        The main last ship time (the last ship time of the dlogreader).
+    - name: "fnlst"
+      description: |
+        The failed node last ship time (the minimum of the last ship times of all failed node shippers running on this node).
+    - name: "wslst"
+      description: |
+        The window shipper last ship time (the minimum of the last ship times of all window shippers running on this node).
+    - name: "shlat-ms"
+      description: |
+        Corresponds to the [`xdr_ship_latency_avg`](/docs/reference/metrics#xdr_ship_latency_avg) statistic.
+    - name: "rsas-ms"
+      description: |
+        Average sleep time for each write to the DC for the purpose of throttling.
+        Corresponds to the [`dc_ship_idle_avg`](/docs/reference/metrics#dc_ship_idle_avg) statistic. (Stands for remote ship average sleep ms).
+    - name: "rsas-pct"
+      description: |
+        Percentage of throttled writes to the DC.
+        Corresponds to the [`dc_ship_idle_avg_pct`](/docs/reference/metrics#dc_ship_idle_avg_pct) statistic. (Stands for remote ship average sleep pct).
+    - name: "con"
+      description: |
+        Number of open connection to the DC. If the DC accepts pipeline writes, there will be 64 connections per destination node.
+        Only available as of version 3.11.1.1. Corresponds to the [`dc_open_conn`](/docs/reference/metrics#dc_open_conn) statistic.
+    - name: "errcl"
+      description: |
+        Number of client layer errors while shipping records for this DC. Errors include timeout, bad network fd, etc.
+        Only available as of version 3.11.1.1. Corresponds to the [`dc_ship_source_error`](/docs/reference/metrics#dc_ship_source_error) statistic.
+    - name: "errsrv"
+      description: |
+        Number of errors from the remote cluster(s) while shipping records for this DC. Errors include out-of-space, key-busy, etc.
+        Only available as of version 3.11.1.1. Corresponds to the [`dc_ship_destination_error`](/docs/reference/metrics#dc_ship_destination_error) statistic.
+    - name: "sz"
+      description: |
+        The cluster size of the destination DC..
+        Only available as of version 3.11.1.1. Corresponds to the [`dc_size`](/docs/reference/metrics/dc_size#dc_size) statistic.
+
+- severity: "DEBUG"
+  context: "xdr"
+  introduced: "3.9"
+  message: |
+    dlog-q: capacity 64 used-elements 1 read-offset 0 write-offset 1
+  occurs: |
+    Every 1 minute.
+  description: |
+    Provide status info on the dlog-q. The dlog-q queue is the in-memory digest log queue.
+    Digests of records that have been written get put on this in-memory queue. The
+    dlogwriter picks them from there and puts them in the on-disk digest log.
+    See below for the details on the 4 numbers.
+  parameters:
+    - name: "capacity"
+      description: |
+        The size of the queue.
+    - name: "used-elements"
+      description: |
+        The number of elements in the queue.
+    - name: "read-offset"
+      description: |
+        The read pointer of the queue. In general, the number of elements in the queue
+        is the difference between the
+        read pointer and the write pointer, i.e., the number of elements that
+        have been written to the queue but haven't yet been read.
+    - name: "write-offset"
+      description: |
+        The write pointer of the queue. In general, the number of elements in the queue
+        is the difference between the
+        read pointer and the write pointer, i.e., the number of elements that
+        have been written to the queue but haven't yet been read.
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.9"
+  removed: "3.12.1"
+  message: |
+    dlog: used global lastshiptime 1490623097271 (2017-03-27 13:58:17 GMT) and reclaimed 0 records. dlog-free-pct=93
+  occurs: |
+    Every 1 minute.
+  description: |
+    Provides digest log (dlog) related information.
+  parameters:
+    - name: "used global lastshiptime"
+      description: |
+        The minimum last ship time across all nodes in the cluster. Corresponds to the `xdr_min_lastshipinfo` statistics.
+        This is used to know until what point can slots in the digest log be reclaimed,
+        by keeping track of the oldest last ship time across all nodes in the cluster. Introduced in version 3.10.0.3.
+    - name: "reclaimed"
+      description: |
+        Indicates how many digests were safely 'removed' from the digestlog. As shipping successfully
+        proceeds, and records are shipped, digests which for sure are not necessary anymore can have their space reclaimed
+        in the digest log. A linked down (destination cluster down or unreachable) is an example where digest log space
+        cannot be reclaimed.
+    - name: "dlog-free-pct"
+      description: |
+        Percentage of the digest log free and available for use. Corresponds to the `dlog_free_pct` statistic. Introduced
+        in version 3.12.1.
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.12.1"
+  message: |
+    dlog: free-pct 93 reclaimed 2456 glst 1490623097271 (2017-03-27 13:58:17 GMT)
+  occurs: |
+    Every 1 minute.
+  description: |
+    Provides digest log (dlog) related information.
+  parameters:
+    - name: "free-pct"
+      description: |
+        Percentage of the digest log free and available for use. Corresponds to the [`dlog_free_pct`](/docs/reference/metrics#dlog_free_pct)
+        statistic.
+    - name: "reclaimed"
+      description: |
+        Indicates how many digests were safely 'removed' from the digestlog. As shipping successfully
+        proceeds, and records are shipped, digests which for sure are not necessary anymore can have their space reclaimed
+        in the digest log. A linked down (destination cluster down or unreachable) is an example where digest log space
+        cannot be reclaimed.
+    - name: "glst"
+      description: |
+        The minimum last ship time across all nodes in the cluster. Corresponds to the [`xdr_global_lastshiptime`](/docs/reference/metrics#xdr_global_lastshiptime)
+        statistics. This is used to know until what point can slots in the digest log be reclaimed,
+        by keeping track of the oldest last ship time across all nodes in the cluster.
+
+- severity: "INFO"
+  context: "xdr"
+  message: |
+    Failed to seek during reclaim. Leaving sptr as is
+  description: |
+    Benign message if node on which this is logged did not receive new writes into the digest log.
+    A background process running every 1 minute tries to reclaim the digest log based on a timestamp.
+    It starts sampling the log by looking at the timestamp of the last record written in the digestlog.
+    If it doesn't find a single record, it bails out early which would print this message.
+
+  ################################################################################
+  # partition context log messages
+  ################################################################################
+
+- severity: "INFO"
+  context: "partition"
+  introduced: "3.12.1"
+  removed: "3.13"
+  message: |
+    {ns_name} fresh-partitions 240
+  occurs: |
+    When fresh partitions are introduced, typically during split brain situation.
+  description: |
+    Number of partitions that are created fresh or empty because a number of nodes, greater than the
+    replication factor, has left the cluster.
+  parameters:
+    - name: "fresh-partitions"
+      description: |
+        The number of fresh (or empty) partitions that are introduced in the cluster.
+
+- severity: "INFO"
+  context: "partition"
+  introduced: "4.3.1"
+  message: |
+    {ns_name} 2 of 5 nodes are quiesced
+  occurs: |
+    When the cluster changes (node addition, removal, or network splits) or
+    when the cluster receives a 'recluster' info command.
+  description: |
+    Number of nodes quiesced in the cluster (or sub cluster).
+  parameters:
+    - name: "nodes participating"
+      description: |
+        The number of nodes quiesced in this sub-cluster out of the total
+        number of nodes observed in the sub-cluster (for
+        [strong-consistency](/docs/reference/configuration/#strong-consistency)
+        namespaces, it will be full roster size instead of observed in the
+        sub-cluster).
+
+- severity: "INFO"
+  context: "partition"
+  introduced: "3.13"
+  message: |
+    {ns_name} rebalanced: expected-migrations (1215,1224,1215) fresh-partitions 397
+  occurs: |
+    For non [strong-consistency](/docs/reference/configuration/#strong-consistency) namespaces,
+    when the cluster changes, because of node addition, removal or network splits.
+  description: |
+    Number of partitions expected to migrate (transmitted, received, and signals) as
+    well as other migration related statistics and fresh partition number.
+  parameters:
+    - name: "expected-migrations"
+      description: |
+        The number of partitions expected to migrate (Transmitted, Received, Signals) as
+        part of this reclustering event. Those correspond to the
+        [`migrate_tx_partitions_initial`](/docs/reference/metrics/#migrate_tx_partitions_initial),
+        [`migrate_rx_partitions_initial`](/docs/reference/metrics/#migrate_rx_partitions_initial),
+        and
+        [`migrate_signals_remaining`](/docs/reference/metrics/#migrate_signals_remaining)
+        statistics respectively.
+    - name: "fresh-partitions"
+      description: |
+        Number of partitions that are created fresh or empty because a number of nodes, greater than the
+        replication factor, has left the cluster.
+
+- severity: "INFO"
+  context: "partition"
+  introduced: "4.0"
+  message: |
+    {ns_name} rebalanced: regime 295 expected-migrations (826,826,826) expected-appeals 0 unavailable-partitions 425
+  occurs: |
+    For [strong-consistency](/docs/reference/configuration/#strong-consistency) namespaces,
+    when the cluster changes, because of node(s) leaving or joining the cluster (or network splits).
+  description: |
+    Number of partitions expected to migrate (transmitted, received, and signals) as well as other migration
+    related statistics and partition availability details.
+  parameters:
+    - name: "regime"
+      description: |
+        This number increments every time there is a reclustering event. This is used in strong consitent namespace and is
+        leveraged by the client libraries. For further details on regime, refer to the [Strong Consistency](/docs/architecture/consistency.html)
+        architecture document.
+    - name: "expected-migrations"
+      description: |
+        The number of partitions expected to migrate (Transmitted, Received, Signals) as
+        part of this reclustering event. Those correspond to the
+        [`migrate_tx_partitions_initial`](/docs/reference/metrics/#migrate_tx_partitions_initial),
+        [`migrate_rx_partitions_initial`](/docs/reference/metrics/#migrate_rx_partitions_initial),
+        and
+        [`migrate_signals_remaining`](/docs/reference/metrics/#migrate_signals_remaining)
+        statistics respectively.
+    - name: "expected-appeals"
+      description: |
+        The number of appeals expected as part of this reclustering event.
+        Appeals occur after a node has been cold-started.
+        The replication state of each record is lost on cold-start and all records must assume an unreplicated state.
+        An appeal resolves replication state from the partition's acting master. These are important for performance;
+        an unreplicated record will need to re-replicate to be read which adds latency. During a rolling cold-restart,
+        an operator may want to wait for the appeal phase to complete after each restart to minimize the performance impact of the procedure.
+        Corresponds to the [`appeals_tx_remaining`](/docs/reference/metrics/#appeals_tx_remaining) statistic
+        but only at the initial time of the reclustering event.
+    - name: "unavailable-partitions"
+      description: |
+        The number of partitions that are unavailable as the roster is not complete and all writes that have occurred
+        to those partitions are not present. Partitions remaining unavailable
+        after the cluster is formed by the full roster will become dead and will require the use of the
+        [`revive`](/docs/reference/info#revive) command to make them available again,
+        which could lead to inconsistencies, depending on what lead to those partition being dead.
+        Corresponds to the [`unavailable_partitions`](/docs/reference/metrics/#unavailable_partitions) statistic.
+
+- severity: "WARNING"
+  context: "partition"
+  introduced: "4.0"
+  message: |
+    {ns_name} rebalanced: regime 295 expected-migrations (826,826,826) expected-appeals 0 dead-partitions 425
+  occurs: |
+    For [strong-consistency](/docs/reference/configuration/#strong-consistency) namespaces,
+    when the cluster reforms with all roster members but resulting in dead partitions present.
+  description: |
+    Number of partitions expected to migrate (transmitted, received, and signals) as well as other migration
+    related statistics and partition availability details.
+  parameters:
+    - name: "regime"
+      description: |
+        This number increments every time there is a reclustering event. This is used in strong consitent namespace and is
+        leveraged by the client libraries. For further details on regime, refer to the [Strong Consistency](/docs/architecture/consistency.html)
+        architecture document.
+    - name: "expected-migrations"
+      description: |
+        The number of partitions expected to migrate (Transmitted, Received, Signals) as
+        part of this reclustering event. Those correspond to the
+        [`migrate_tx_partitions_initial`](/docs/reference/metrics/#migrate_tx_partitions_initial),
+        [`migrate_rx_partitions_initial`](/docs/reference/metrics/#migrate_rx_partitions_initial),
+        and
+        [`migrate_signals_remaining`](/docs/reference/metrics/#migrate_signals_remaining)
+        statistics respectively.
+    - name: "expected-appeals"
+      description: |
+        The number of appeals expected as part of this reclustering event.
+        Appeals occur after a node has been cold-started.
+        The replication state of each record is lost on cold-start and all records must assume an unreplicated state.
+        An appeal resolves replication state from the partition's acting master. These are important for performance;
+        an unreplicated record will need to re-replicate to be read which adds latency. During a rolling cold-restart,
+        an operator may want to wait for the appeal phase to complete after each restart to minimize the performance impact of the procedure.
+        Corresponds to the [`appeals_tx_remaining`](/docs/reference/metrics/#appeals_tx_remaining) statistic
+        but only at the initial time of the reclustering event.
+    - name: "unavailable-partitions"
+      description: |
+        The number of partitions that are dead.
+        Corresponds to the [`dead_partitions`](/docs/reference/metrics/#dead_partitions) statistic.
+        Will require the use of the [`revive`](/docs/reference/info#revive) command to make such partitions available again,
+        which could lead to inconsistencies, depending on what lead to those partition being dead.
+
+- severity: "INFO"
+  context: "partition"
+  introduced: "4.0"
+  message: |
+    {ns_name} 5 of 6 nodes participating - regime 221 -> 223
+  occurs: |
+    For [strong-consistency](/docs/reference/configuration/#strong-consistency) namespaces,
+    when the cluster changes, because of node(s) leaving or joining the cluster (or network splits).
+  description: |
+    Number of nodes participating in the cluster (or sub cluster) as well as the regime change.
+  parameters:
+    - name: "nodes participating"
+      description: |
+        The number of nodes participating in this cluster out of the total number of nodes for the full roster.
+    - name: "regime"
+      description: |
+        This number increments every time there is a reclustering event. This is used in strong consitent namespace and is
+        leveraged by the client libraries. For further details on regime, refer to the [Strong Consistency](/docs/architecture/consistency.html)
+        architecture document.
+
+  ################################################################################
+  # security context log messages
+  ################################################################################
+
+- severity: "INFO"
+  context: "security"
+  introduced: "3.7.0.1"
+  message: |
+    role violation | authenticated user: sally | action: delete | detail: {test|setB} [D|ee50d7c1d0f427ed5c41ef8a18efd85412b973ff]
+  occurs: |
+    Occurs when role violation happens, if audit logging configured to report those. Refer to the 
+    [`Security Configuration`](/docs/operations/configure/security/access-control/index.html#security-configuration) paragraph 
+    for details. 
+  description: |
+    Provides details on the role violation, including transaction type, namespace, set and relevant record's digest.
+  parameters:
+    - name: "authenticated user"
+      description: |
+        The authenticated user violating the role's permissions.
+    - name: "action"
+      description: |
+        The transaction type (read/write/delete/udf) or user or data related operation.
+    - name: "detail"
+      description: |
+        The namespace, set and digest of the record involved in the role violation.
+
+- severity: "INFO"
+  context: "security"
+  introduced: "3.7.0.1"
+  message: |
+    permitted | authenticated user: admin | action: create user | detail: user=bruce;roles=read-write
+  occurs: |
+    Occurs when permitted transaction happen under an authenticated user (in this case a user-admin related operation). Refer to the 
+    [`Security Configuration`](/docs/operations/configure/security/access-control/index.html#security-configuration) paragraph 
+    for details. 
+  description: |
+    Provides details on the operation performed, including potentially transaction type, namespace, set and relevant record's digest.
+  parameters:
+    - name: "authenticated user"
+      description: |
+        The authenticated user performing the operation.
+    - name: "action"
+      description: |
+        The transaction type (read/write/delete/udf) or user or data related operation.
+    - name: "detail"
+      description: |
+        The details of the operation, either for a user or admin related opertaion or namespace, set and digest of the record involved if a single record transaction.
+
+  ################################################################################
+  # rw context log messages
+  ################################################################################
+
+- severity: "WARNING"
+  context: "rw"
+  message: |
+    dup-res ack: no digest
+  description: |
+    During a downgrade from a 4.5.3+ server to an earlier version, the following
+    protocol-related warning may be experienced temporarily on a node with
+    the earlier version. This warning is harmless. This warning is resultant
+    of an older node briefly receiving 4.5.3+ protocol fabric messages from newer
+    nodes. This message will cease after the next rebalance.
+
+- severity: "WARNING"
+  context: "rw"
+  message: |
+    got rw msg with unrecognized op 8
+  description: |
+    During a downgrade from a 4.5.3+ server to an earlier version, the following
+    protocol-related warning may be experienced temporarily on a node with
+    the earlier version. This warning is harmless. This warning is resultant
+    of an older node briefly receiving 4.5.3+ protocol fabric messages from newer
+    nodes. This message will cease after the next rebalance.
+
+- severity: "WARNING"
+  context: "rw"
+  message: |
+    {ns} can't get stored key &lt;Digest&gt;:0x5230acd92762fa6f827e902d58199dd7b928479c
+  description: |
+    This message indicates that the index has the stored-key flag
+    set for a record, but the record in storage does not contain
+    the key. Normally this would never happen, but there was a bug
+    in some older versions whereby this mismatch could occur when
+    a node containing old data was cold-started and brought back
+    into the cluster with records that had been deleted but not
+    durably deleted. This has been corrected in versions from 4.4.0.8
+    onward (and 4.3.1.8 onward in the 4.3.x branch) so should no
+    longer be a concern. Enterprise Edition Licensees can contact Aerospike 
+    Support for further guidance when encountering this error.
+
+- severity: "WARNING"
+  context: "rw"
+  message: |
+    key mismatch - end of universe?
+  description: |
+    This message results from KEY_MISMATCH error. It indicates that
+    any update, delete or read request for a record which has key stored,
+    the incoming key does not match with the existing stored key.
+    This would in theory indicate a RIPEMD-160 key collision which is of course 
+    not likely (for details refer to the paper on 
+    [Collision Resistance of RIPEMD-160](https://online.tugraz.at/tug_online/voe_main2.getvolltext?pCurrPk=17675). 
+    This message would therefore occur in case of key / hash mismatch on the application side 
+    or some message level corruption. 
+
+
+- severity: "DETAIL"
+  context: "rw"
+  introduced: "3.16"
+  message: |
+    {bar} write_master: record too big &lt;Digest&gt;:0xd751c6d7eea87c82b3d6332467e8bc9a3c630e13
+  description: |
+    Appears with the `WARNING` message about `failed as_storage_record_write()` for exceeding 
+    the [`write-block-size`](/docs/reference/configuration/#write-block-size).
+  parameters:
+    - name: "{ns}"
+      description: |
+        Namespace being written to
+    - name: "&lt;Digest&gt;"
+      description: |
+        Digest of the record that was rejected
+
+- severity: "WARNING"
+  context: "rw"
+  introduced: "3.16"
+  message: |
+    {bar} write_master: failed as_storage_record_write() &lt;Digest&gt;:0xd751c6d7eea87c82b3d6332467e8bc9a3c630e13
+  description: |
+    Most likely appearing as a result of exceeding the [`write-block-size`](/docs/reference/configuration/#write-block-size). 
+    Setting the `rw` and `drv_ssd` contexts to `detail` logging will provide the accompanying explanatory log messages. 
+    Refer to the [`log-set`](/docs/reference/info/index.html#log-set) and [`Changing Log Levels`](/docs/reference/serverlogmessages/index.html) 
+    documentation pages for how to dynamically change log levels.
+  parameters:
+    - name: "{ns}"
+      description: |
+        Namespace being written to
+    - name: "&lt;Digest&gt;"
+      description: |
+        Digest of the record that was rejected
+
+
+  ################################################################################
+  # rw-client context log messages
+  ################################################################################
+
+- severity: "DETAIL"
+  context: "rw-client"
+  introduced: "3.16.0.1"
+  message: |
+    {ns_name} client 10.0.3.182:51160 write &lt;Digest&gt;:0x8df238affec6f8e3a2c22d6c54c91c5bc4f3ff81
+  occurs: |
+    Single line per client transactions that get as far as successfully reserving a partition.
+    Requires log level to be set to detail for the rw-context: `asinfo -v "log-set:id=0;rw-client=detail"`
+  description: |
+    Provides details on the originating client's IP address, the transaction type and the digest of the record being accessed.
+  parameters:
+    - name: "client"
+      description: |
+        The originating client's IP address.
+    - name: "transaction &lt;Digest&gt;"
+      description: |
+        The transaction type (read/write/delete/udf) as well as the digest.
+
+
+  ################################################################################
+  # storage context log messages
+  ################################################################################
+
+- severity: "INFO"
+  context: "storage"
+  introduced: "4.6.0.2"
+  message: |
+    {ns_name} partitions shut down
+  description: |
+    This message is one of a sequence of messages logged during Aerospike server shutdown of storage-engine device namespaces. The message signifies that all of the namespace's partitions and index trees have been locked, so that no records are accessible.
+
+
+- severity: "INFO"
+  context: "storage"
+  introduced: "4.6.0.2"
+  message: |
+    {ns_name} storage devices flushed
+  description: |
+    This message is one of a sequence of messages logged during Aerospike server shutdown of storage-engine device namespaces.  The message signifies that the data in write buffers
+    for the namespace's devices has been successfully flushed to those devices.
+
+- severity: "INFO"
+  context: "storage"
+  introduced: "4.6.0.2"
+  message: |
+    {ns_name} storage-engine memory - nothing to do
+  description: |
+    This message is logged during Aerospike server shutdown of storage-engine memory namespaces. The message simply notes that there are no storage shutdown
+    tasks needed for the namespace.
+
+
+  ################################################################################
+  # namespace context log messages
+  ################################################################################
+
+- severity: "INFO"
+  context: "namespace"
+  introduced: "4.6.0.2"
+  message: |
+    {ns_name} persisted arena stages
+  description: |
+    This message is one of a sequence of messages logged during Aerospike server shutdown of storage-engine device namespaces.
+    The message signifies that the arena stages for the namespace have been persisted to storage. An unusual delay in the appearance
+    of this message during shutdown might be due to [`index-type`](/docs/reference/configuration/#index-type) configured to `pmem`.
+
+- severity: "INFO"
+  context: "namespace"
+  introduced: "4.6.0.2"
+  message: |
+    {ns_name} persisted tree roots
+  description: |
+    This message is one of a sequence of messages logged during Aerospike server shutdown of storage-engine device namespaces. 
+    The message signifies that the namespace's common partition index tree information has been persisted to storage. An unusual delay
+    in the appearance of this message during shutdown might be due to a high number of [`partition-tree-sprigs`](/docs/reference/configuration/#partition-tree-sprigs)
+    configured for the namespace.
+
+- severity: "INFO"
+  context: "namespace"
+  introduced: "4.6.0.2"
+  message: |
+    {ns_name} persisted trusted base block
+  description: |
+    This message is one of a sequence of messages logged during Aerospike server shutdown of storage-engine device namespaces. The message signifies that the persistent memory base block for the namespace
+    has been persisted to storage with "trusted" status.  Note that "trusted" status is a necessary condition for a subsequent fast restart of the namespace.
+
+
+  ################################################################################
+  # as context log messages
+  ################################################################################
+
+- severity: "INFO"
+  context: "as"
+  introduced: "3.0"
+  message: |
+    finished clean shutdown - exiting
+  description: |
+    This message is the last one of a sequence of messages logged during Aerospike server shutdown. The message signifies that
+    Aerospike was shutdown with "trusted" status which is a necessary condition for a subsequent fast restart of a namespace
+    that is configured with storage-engine device. See this knowledge-base article on details regarding [ASD shutdown process](https://discuss.aerospike.com/t/the-asd-process-cold-starts-after-a-dirty-exit-which-appears-to-be-clean/6472).
+
+
+
+  ################################################################################
+  # Removed log messages
+  ################################################################################
+
+
+- severity: "INFO"
+  removed: "3.9"
+  context: "info"
+  message: |
+    system memory: free 46749588kb (94 percent free)
+  parameters:
+    - name: "free"
+      description: |
+        Amount of free RAM in kilobytes
+    - name: "percent free"
+      description: |
+        Percentage of all ram free (rounded to nearest percent)
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.0"
+  removed: "3.9"
+  message: |
+    ClusterSize 36 ::: objects 200435832
+  parameters:
+    - name: "ClusterSize"
+      description: |
+        Number of nodes recognized by this node as being in the cluster
+    - name: "objects"
+      description: |
+        Number of objects held by this node (includes both master and prole objects)
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    heartbeat_received: self 887075 : foreign 35456447
+  parameters:
+    - name: "self"
+      description: |
+        Number of heartbeats current node has received from itself (should be 0 for mesh).
+    - name: "foreign"
+      description: |
+        Number of heartbeats the current node has received from all other nodes combined.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.0"
+  removed: "3.8.4"
+  occurs: |
+    Periodically displayed, every 10 seconds by default, for each namespace.
+    When migrations have completed this line is reduced to `{ns_name} migrations - complete`.
+  message: |
+    {ns_name} migrations - remaining (352 tx, 107 rx), active (4 tx, 16 rx), 59.15% complete
+  parameters:
+    - name: "{ns_name}"
+      description: |
+        "ns_name" will be replaced by the name of a particular namespace.
+    - name: "remaining"
+      description: |
+        Total number of receive (rx) and transmit (tx) partition migrations outstanding
+        for this node.
+    - name: "active"
+      description: |
+        Number of receive and transmit partition migrations currently in progress.
+    - name: "% complete"
+      description: |
+        Percent of the total number of partition migrations scheduled for this
+        rebalance that have already completed.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.1"
+  removed: "3.9"
+  occurs: |
+    Every 30th statistics cycle.
+  message: |
+    node id bb94a189d290c00
+  parameters:
+    - name: "node id"
+      description: |
+        Displays the node id of the local node.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.1"
+  removed: "3.9"
+  occurs: |
+    Every 30th statistics cycle.
+  message: |
+    reads 1051,52 : writes 5415,23
+  parameters:
+    - name: "reads"
+      description: |
+        Cumulative values for read (successes),(failures).
+    - name: "writes"
+      description: |
+        Cumulative values for write (successes),(failures).
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.1"
+  removed: "3.9"
+  occurs: |
+    Every 30th statistics cycle.
+  message: |
+    udf reads 79,2 : udf writes 2508,0 : udf deletes 102,0 : lua errors 1
+  parameters:
+    - name: "udf reads"
+      description: |
+        Cumulative value for udf reads (successes),(failures).
+    - name: "udf writes"
+      description: |
+        Cumulative value for udf writes (successes),(failures).
+    - name: "udf deletes"
+      description: |
+        Cumulative value for udf deletes (successes),(failures).
+    - name: "lua errors"
+      description: |
+        Cumulative value for lua errors.
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.1"
+  removed: "3.9"
+  occurs: |
+    Every 30th statistics cycle.
+  message: |
+    index (new) batches 18,0 : direct (old) batches 0,0
+  parameters:
+    - name: "index (new) batches"
+      description: |
+        Cumulative value for batch index request (successes),(failures)
+    - name: "direct (old) batches"
+      description: |
+        Cumulative value for batch direct request (successes),(failures)
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.1"
+  removed: "3.9"
+  occurs: |
+    Every 30th statistics cycle.
+  message: |
+    aggregation queries 6,0 : lookup queries 5,0
+  parameters:
+    - name: "aggregation queries"
+      description: |
+        Cumulative value for aggregation query (successes),(failures)
+    - name: "direct (old) batches"
+      description: |
+        Cumulative value for lookup query (successes),(failures)
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.1"
+  removed: "3.9"
+  occurs: |
+    Every 30th statistics cycle.
+  message: |
+    proxies 0,0
+  parameters:
+    - name: "proxies"
+      description: |
+        Cumulative value for proxy (successes),(failures).
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    {namespace} objects 2195 : sub-objects 0 : master objects 2195 : master sub-objects 0 : prole objects 0 : prole sub-objects 0
+  parameters:
+    - name: "objects"
+      description: |
+        Number of objects in {namespace} on the local node
+    - name: "sub-objects"
+      description: |
+        Number of sub-objects in {namespace} on the local node
+    - name: "master objects"
+      description: |
+        Number of master objects in {namespace} on the local node
+    - name: "master sub-objects"
+      description: |
+        Number of master sub-objects in {namespace} on the local node
+    - name: "prole objects"
+      description: |
+        Number of replica objects in {namespace} on the local node
+    - name: "prole sub-objects"
+      description: |
+        Number of replica sub-objects in {namespace} on the local node
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    {namespace} memory bytes used 456939 (index 140480 : sindex 221513 : data 94946) : used pct 0.01
+  parameters:
+    - name: "memory bytes used"
+      description: |
+        Total number of bytes used in memory for {namespace} on the local node.
+    - name: "index"
+      description: |
+        Number of bytes holding the primary index in system memory for {namespace} on the local node.
+    - name: "sindex"
+      description: |
+        Number of bytes holding secondary indexes in process memory for {namespace} on the local node.
+    - name: "data"
+      description: |
+        Number of bytes holding data in system memory for {namespace} on the local node. Only applicable when {namespace} is configured for data in memory.
+    - name: "used pct"
+      description: |
+        Percentage of bytes used in memory for {namespace} on the local node.
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    {ns_name} disk bytes used 596736 : avail pct 99: cache-read pct 12.00
+  parameters:
+    - name: "disk bytes used"
+      description: |
+        Number of bytes used on disk for {namespace} on the local node.
+    - name: "avail pct"
+      description: |
+        Minimum percentage of contiguous disk space in {namespace} on the local node.
+    - name: "cache-read pct"
+      description: |
+        Percentage of reads from the post-write cache instead of disk. Only applicable when {namespace} is not configured for data in memory.
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    rec refs 201422013 ::: rec locks 0 ::: trees 0 ::: wr reqs 24 ::: mig tx 0 ::: mig rx 0
+  parameters:
+    - name: "rec refs"
+      description: |
+        Number of record references on node
+    - name: "rec locks"
+      description: |
+        Number of records currently locked
+    - name: "trees"
+      description: |
+        obsolete
+    - name: "wr reqs"
+      description: |
+        Number of transactions currently waiting on other nodes
+    - name: "mig tx"
+      description: |
+        Number of objects currently being transmitted by migrations
+    - name: "mig rs"
+      description: |
+        Number of objects currently being received by migrations
+
+- severity: "INFO"
+  context: "info"
+  introduced: "3.7.1"
+  removed: "3.9"
+  occurs: |
+    Every 30th statistics cycle.
+  message: |
+    basic scans 11,0 : aggregation scans 0,0 : udf background scans 5,0 :: active scans 0
+  parameters:
+    - name: "basic scans"
+      description: |
+        Cumulative value for basic scan (successes),(failures).
+    - name: "aggregation scans"
+      description: |
+        Cumulative value for aggregation scan (successes),(failures).
+    - name: "udf background scans"
+      description: |
+        Cumulative value for udf background scan (successes),(failures).
+    - name: "active scans"
+      description: |
+        Value for the number of active scans.
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    replica errs :: null 0 non-null 0 ::: sync copy errs :: node 0 :: master 0
+  description: |
+    partition state-transition errors. Should be zero.
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    trans_in_progress: wr 23 prox 0 wait 0 ::: q 1 ::: bq 0 ::: iq 0 ::: dq 0 : fds - proto (17, 2699692, 2699675) : hb (2, 3, 1) : fab (30, 44, 14)
+  parameters:
+    - name: "wr"
+      description: |
+        Number of writes in progress
+    - name: "prox"
+      description: |
+        Number of proxies in progress
+    - name: "wait"
+      description: |
+        Number of waiting transactions
+    - name: "q"
+      description: |
+         Number of transactions on the transaction queue
+    - name: "bq"
+      description: |
+        Number of batch transactions on the batch transaction queue
+    - name: "iq"
+      description: |
+        Number of info transactions on the info transaction queue
+    - name: "dq"
+      description: |
+        Number of nsup transactions on the nsup transaction queue
+    - name: "fds - proto"
+      description: |
+        (Number of opened connections between this node and clients,
+        Number of connections ever opened between this node and clients,
+        Number of connections ever closed between this node and clients - can be reaped after idle, properly shutdown by the client (initiated a proper socket close),
+        or preliminary packet parsing errors (like unexpected headers, etc...) most of these would have a WARN in the logs)
+    - name: "hb"
+      description: |
+        (Number of presently open heartbeat connections (should be 0 for multicast),
+        Total number of heartbeat connections ever opened,
+        Total number of heartbeat connections ever closed)
+
+    - name: "fab"
+      description: |
+        (Number of presently open fabric (intra-cluster) connections,
+        Total number of fabric connections ever opened,
+        Total number of fabric connections ever closed)
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    heartbeat_stats: bt 0 bf 0 nt 0 ni 0 nn 0 nnir 0 nal 0 sf1 0 sf2 0 sf3 0 sf4 0 sf5 0 sf6 0 mrf 0 eh 0 efd 0 efa 0 um 0 mcf 0 rc 0`
+  parameters:
+    - name: "bt"
+      description: |
+        Bad Type: Received heartbeat packet with an undefined message type.
+    - name: "bf"
+      description: |
+        Bad Pulse FD: Received heartbeat packet on the wrong socket File Descriptor (FD.)
+    - name: "nt"
+      description: |
+        No Type: Received a heartbeat packet without a message type (i.e., PULSE, INFO_REQUEST, INFO_REPLY.)
+    - name: "ni"
+      description: |
+        No ID: Received a heartbeat packet without the message ID (i.e., missing protocol version.)
+    - name: "nn"
+      description: |
+        No Node in Pulse: Received heartbeat PULSE packet without the node field set.
+    - name: "nnir"
+      description: |
+        No Node in Info Request: Received heartbeat INFO_REQUEST packet without the node field set.
+    - name: "nal"
+      description: |
+        No ANV Length: Received a heartbeat packet of type v2 or greater without the required Adjacent Nodes Vector (ANV) length.
+    - name: "sf1"
+      description: |
+        Send Failed 1: Failed to send a heartbeat INFO_REQUEST packet to the remote node(s) via multicast.
+    - name: "sf2"
+      description: |
+        Send Failed 2: Failed to send a heartbeat INFO_REQUEST packet to the remote node via mesh.
+    - name: "sf3"
+      description: |
+        Send Failed 3: Failed to send a heartbeat INFO_REPLY packet to the remote node(s) via multicast.
+    - name: "sf4"
+      description: |
+        Send Failed 4: Failed to send a heartbeat INFO_REPLY packet to the remote node via mesh.
+    - name: "sf5"
+      description: |
+        Send Failed 5: Failed to send a heartbeat PULSE packet to the remote node(s) via multicast.
+    - name: "sf6"
+      description: |
+        Send Failed 6: Failed to send a heartbeat PULSE packet to the remote node via mesh.
+    - name: "mrf"
+      description: |
+        Missing Required Field: Received heartbeat INFO_REPLY packet without one or more required field (i.e., node, address, port.)
+    - name: "eh"
+      description: |
+        Expire HB: Have not received a heartbeat from a remote node within the configured timeout interval.
+    - name: "efd"
+      description: |
+        Expire Fabric Dead: Both heartbeat and fabric have have not received packets from the remote node within the configured timeout interval.
+    - name: "efa"
+      description: |
+        Expire Fabric Alive: Have not received a heartbeat from the remote node within the configured timeout interval, but fabric is still receiving packets from the remote node.
+    - name: "um"
+      description: |
+        Unparsable msg: Received data on a heartbeat socket that could not be parsed into a heartbeat msg.
+    - name: "mcf"
+      description: |
+        Mesh Connect Failure: Failed to get information about the connected mesh socket.
+    - name: "rc"
+      description: |
+        Remote Close: A heartbeat socket was closed at the remote end.
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    tree_counts: nsup 1 scan 0 batch 0 dup 0 wprocess 0 migrx 0 migtx 0 ssdr 1 ssdw 0 rw 24
+  parameters:
+    - name: "tree"
+      description: |
+        nsup 1 scan 0 batch 0 dup 0 wprocess 0 migrx 0 migtx 0 ssdr 1 ssdw 0 rw 24</code>
+    - name: "nsup"
+      description: |
+        Partitions the <em>namespace</em> supervisor thread currently holds a reference to
+    - name: "scan"
+      description: |
+        Partitions the scan threads currently hold a reference to
+    - name: "batch"
+      description: |
+        Partitions the batch threads currently hold a reference to
+    - name: "dup"
+      description: |
+        Partitions the duplicate resolution algorithm currently hold a reference to
+    - name: "wprocess"
+      description: |
+        Partitions the write process algorithm currently hold a reference to<br />Write process is the process that handles the prole writes and prole acks
+    - name: "migrx"
+      description: |
+        Partitions the migration receive threads currently hold a reference to
+    - name: "migtx"
+      description: |
+        Partitions the migration transmit threads currently hold a reference to
+    - name: "ssdr"
+      description: |
+        Partitions the SSD read threads currently hold a reference to
+    - name: "ssdw"
+      description: |
+        Partitions the SSD write threads currently hold a reference to
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    namespace NAMESPACE: disk inuse: 1458377696640 memory inuse: 10318259584 (bytes) sindex memory inuse: 0 (bytes) avail pct 5 cache-read pct 11.07
+  parameters:
+    - name: "namespace"
+      description: |
+        The namespace the following data pertains to
+    - name: "disk inuse"
+      description: |
+        Amount of disk the namespace is using
+    - name: "memory inuse"
+      description: |
+        Amount of memory the namespace is using
+    - name: "sindex memory inuse"
+      description: |
+        Amount of memory used by secondary indexes
+    - name: "avail pct"
+      description: |
+        This is the minimum between the amount of available memory and the amount of contiguous disk-space.
+    - name: "cache-read pct"
+      description: |
+        Percentage of reads being read from the post-write cache rather than going to disk.
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    partitions: actual 89 sync 99 desync 0 zombie 0 wait 0 absent 3908
+  parameters:
+    - name: "actual"
+      description: |
+        Number of master partitions owned by this node
+    - name: "sync"
+      description: |
+        Number of non-master partitions owned by this node
+    - name: "absent"
+      description: |
+        Number of partitions not owned by this node
+    - name: "desync"
+      description: |
+        Number of partitions owned by this node, but currently without data. Only none-zero when cluster state is changing
+    - name: "zombie"
+      description: |
+        Number of partitions with data, but not owned by this node. Only none-zero when cluster state is changing
+    - name: "wait"
+      description: |
+        Should always be zero
+
+- severity: "INFO"
+  context: "info"
+  removed: "3.9"
+  message: |
+    histogram dump: {HISTOGRAM NAME} (1344911766 total)
+    (00: 1262539302) (01: 0044998665) (02: 0013431778) (03: 0007273116)
+    (04: 0004299011) (05: 0003086466) (06: 0002182478) (07: 0001854797)
+    (08: 0000312272) (09: 0000370715) (10: 0000643337) (11: 0001045861)
+    (12: 0001991430) (13: 0000882538)
+  occurs: |
+    Periodically printed to the logs (every 10 seconds by default).
+  parameters:
+    - name: "histogram dump"
+      description: |
+        Name of the histogram to follow
+    - name: "total"
+      description: |
+        Number of data points represented by this histogram
+    - name: "N"
+      description: |
+        Number of data points that greater than 2<sup>N</sup> and less than 2<sup>(N+1)</sup>
+  description: |
+    Additional histograms can be accessed by enabling microbenchmarks and/or
+    storage-benchmarks statically or dynamically in the service context of the
+    configuration.
+
+- severity: "INFO"
+  context: "drv_ssd"
+  removed: "3.3.17"
+  message: |
+    /dev/sdd defrag start
+  occurs: |
+    This marks the beginning of a new cycle of the defragmentation subsystem on the SSD device.
+
+- severity: "INFO"
+  context: "drv_ssd"
+  removed: "3.3.17"
+  message: |
+    /dev/sdd curr_pos 430536 wblocks:1785 recs:42341 waits:0(0) lock-time:19 ms total-time:2154 ms.
+  occurs: |
+    When the defrag cycle completes
+  parameters:
+    - name: "curr_pos"
+      description: |
+        Last block read by defrag algorithm
+    - name: "wblocks"
+      description: |
+        Number of blocks that will be recovered during this cycle. Limited by <u>defrag-max-blocks</u> setting
+    - name: "recs"
+      description: |
+        Number of records moved from defragged blocks
+    - name: "waits"
+      description: |
+        During defrag if we find that the queue to write to the device is longer than <u>defrag-queue-hwm</u> then we will sleep for 1 msec intervals till the queue falls below <u>defrag-queue-lwm</u>
+    - name: "lock-time"
+      description: |
+        How long it took to acquire a lock for each defraggable wblock
+    - name: "total-time"
+      description: |
+        How long this defrag run took
+  description: |
+    **wblocks** consistently reaching <u>defrag-max-blocks</u> is an indicator that the defrag configuration and/or the system is unable to keep up with defrag.
+    This typically leads to breaching <u>stop-writes-pct</u> which causes new writes to fail. If the **total-time** is less than the <u>defrag-period</u> then first try decreasing the <u>defrag-period</u>.
+    If defrag still isn't able to catch up and the **total-time** > <u>defrag-period</u> then your system hardware cannot handle the load. A few considerations:
+    - Consider increasing the number of disks per node. Each disk has its own defrag thread, having more disks means more blocks can be defragged in parallel.
+    - Consider increasing the number of nodes in the cluster. We distribute data evenly across the cluster, adding more nodes (scaling out) relaxes the need to buy expensive hardware (scaling up).
+
+- severity: "INFO"
+  context: "drv_ssd"
+  removed: "3.3.17"
+  message: |
+    device /dev/sdd: free 50071M contig 29486M  w-q 0 w-free 224963 swb-free 10 w-tot 40149228
+  parameters:
+    - name: "free"
+      description: |
+        Amount of free space on disk
+    - name: "contig"
+      description: |
+        amount of contiguous free space on disk
+    - name: "w-q"
+      description: |
+        Objects pending to be written to the SSD
+    - name: "w-free"
+      description: |
+        Number for free write blocks on disk
+    - name: "swb-free"
+      description: |
+        Number of free SSD write buffers. This is only an indication that at some point extra
+        swb (streaming write buffers) were allocated (sign of a back log) and then subsequently
+        released to the swb pool, which will eventually reduce those down if those stay unused
+    - name: "w-tot"
+      description: |
+        Total number of SSD write buffers persisted to device.
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.8.1"
+  removed: "3.9"
+  message: |
+    throughput 3722 : inflight 164 : dlog outstanding 100 (-10.0/s)
+  parameters:
+    - name: "throughput"
+      description: |
+        The current throughput, shipping to destination cluster(s). When shipping to multiple clusters
+        the throughput will represent the combined throughput to all destination clusters.
+        Corresponds to the `cur_throughput` statistic.
+    - name: "inflight"
+      description: |
+        The number of records that are inflight, meaning that have been sent to the destination cluster(s)
+        but for which a response has not been received yet. Corresponds to the `stat_recs_inflight` statistic.
+    - name: "dlog outstanding"
+      description: |
+        The number of record's digests yet to be processed in the digest log. In parenthesis, the
+        average change normalized to digests per second (over the 10 seconds interval separating those log lines).
+        Corresponds to the `stat_recs_outstanding` statistic.
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.8.1"
+  removed: "3.9"
+  message: |
+    sh 5588691 : ul 12 : lg 11162298 : rlg 54 : lproc 11162198 : rproc 45 : lkdproc 0 : errcl 54 : errsrv 0 : hkskip 6303 6299 : flat 0
+  parameters:
+    - name: "sh"
+      description: |
+        The cumulative number of records that have been shipped since this node started.
+        Corresponds to the `stat_recs_shipped` statistic.
+    - name: "ul"
+      description: |
+        The number of record's digests that have been written to the node but not logged yet to the digestlog (unlogged).
+    - name: "lg"
+      description: |
+        The number of record's digests that have been logged this includes both master and replica records
+        but a node only ships records for which it owns the master partition and will process records belonging to its
+        replica partitions only when a neighboring source node goes down.
+    - name: "rlog"
+      description: |
+        The number of records that have been relogged on this node due to temporary failures when attempting
+        to ship. Corresponds to the `stat_recs_relogged` statistic.
+    - name: "lproc"
+      description: |
+        The number of record's digests that have been processed locally. A processed digest does not necessarily
+        imply a shipped record (for example, replica digests don't get shipped unless a source node is down,
+        and hotkeys also don't have all their updates necessarily shipped). Corresponds to the `stat_recs_logged`
+        statistics.
+    - name: "rproc"
+      description: |
+        The number of replica record's digests that have been processed by this node. A node will process records belonging to its
+        replica partitions only when a neighboring source node goes down. Corresponds to the `stat_recs_replprocessed`
+        statistic.
+    - name: "lkdproc"
+      description: |
+        The number of record's digests that have been processed as part of a linked down session. A link down session is
+        spawned when a full destination cluster is down or not reachable. Corresponds to the `stat_recs_linkdown_processed` statistic.
+    - name: "errcl"
+      description: |
+        The number of errors encountered when attempting to ship due to the embedded client. For example, if
+        the local XDR embedded client is having issues or delays in establishing connections.
+        Corresponds to the `err_ship_client` statistic.
+    - name: "errsrv"
+      description: |
+        The number of errors encountered when attempting to ship due to the destination cluster. For example if
+        the destination cluster is temporarily overloaded. Corresponds to the `err_ship_server` statistic.
+    - name: "hkskip"
+      description: |
+        There are 2 numbers to keeping track of hotkeys related processing. The first one represents the number
+        of record's digests that are skipped due to an already existing entry in the reader's thread cache (meaning
+        a version of this record was just shipped). The second one represents the number of record's digest that
+        are actually shipped because their cache entries expired and were dirty.
+        Corresponds to the [noship_recs_hotkey](/docs/reference/metrics/#noship_recs_hotkey) and
+        [noship_recs_hotkey_timeout](/docs/reference/metrics/#noship_recs_hotkey_timeout) statistics.
+    - name: "flat"
+      description: |
+        The average time in milliseconds to fetch records locally (this is an exponential moving average - 95/5).
+        Corresponds to the `local_recs_fetch_avg_latency` statistic.
+
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.8.1"
+  removed: "3.9"
+  message: |
+    [DC_NAME] CLUSTER_UP : timelag 1 secs : lst 1460929221893 (2016-04-17 21:40:21.893 GMT) : mlst 1460929223000 (2016-04-17 21:40:23.000 GMT) : fnlst 0 (-) : wslst 0 (-) : shlat 0 ms
+  occurs: |
+    Every 1 minute, for each configured destination cluster (or DC).
+  parameters:
+    - name: "[DC_NAME]"
+      description: |
+        Name and status of the DC. Here are the different statuses: CLUSTER_INACTIVE, CLUSTER_UP,
+        CLUSTER_DOWN, CLUSTER_WINDOW_SHIP. Corresponds to the `dc_state` statistic.
+    - name: "timelag"
+      description: |
+        The lag in seconds. This is computed as the difference between the current time and the time-stamp
+        of the record that was last successfully shipped. This provides a sense of how 'far behind' the
+        destination cluster lags behind the source cluster. This does not correspond to the time it will take
+        the source cluster to 'catch up', neither does it necessarily relates to the number of outstanding
+        digests to be processed. Corresponds to the `xdr_timelag` statistic.
+    - name: "lst"
+      description: |
+        The overall last ship time for the node (the minimum of all last ship times on this node).
+    - name: "mlst"
+      description: |
+        The main last ship time (the last ship time of the dlogreader).
+    - name: "fnlst"
+      description: |
+        The failed node last ship time (the minimum of the last ship times of all failed node shippers running on this node).
+    - name: "wslst"
+      description: |
+        The window shipper last ship time (the minimum of the last ship times of all window shippers running on this node).
+    - name: "shlat"
+      description: |
+        Corresponds to the `latency_avg_ship` statistic.
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.8.1"
+  removed: "3.9"
+  message: |
+    logq : (128 1 0 1)
+  occurs: |
+    Every 1 minute.
+  description: |
+    Provide status info on the lgoq. The logq queue is the in-memory digest log queue.
+    Digests of records that have been written get put on this in-memory queue. The
+    dlogwriter picks them from there and puts them in the on-disk digest log.
+    See below for the details on the 4 numbers.
+  parameters:
+    - name: "1st number"
+      description: |
+        The size of the queue.
+    - name: "2nd number"
+      description: |
+        The number of elements in the queue.
+    - name: "3rd number"
+      description: |
+        The read pointer of the queue. In general, the number of elements in the queue
+        is the difference between the
+        read pointer and the write pointer, i.e., the number of elements that
+        have been written to the queue but haven't yet been read.
+    - name: "4th number"
+      description: |
+        The write pointer of the queue. In general, the number of elements in the queue
+        is the difference between the
+        read pointer and the write pointer, i.e., the number of elements that
+        have been written to the queue but haven't yet been read.
+
+- severity: "INFO"
+  context: "xdr"
+  introduced: "3.8.1"
+  removed: "3.9"
+  message: |
+    Reclaimed 469400 records space in digest log...
+  occurs: |
+    Every 1 minute.
+  description: |
+    Indicates how many digests were safely 'removed' from the digestlog. As shipping successfully
+    proceeds, and records are shipped, digests which for sure are not necessary anymore can have their space reclaimed
+    in the digest log. A linked down (destination cluster down or unreachable) is an example where digest log space
+    cannot be reclaimed.
+
+- severity: "INFO"
+  context: "storage"
+  introduced: "3.0"
+  removed: "4.6.0.2"
+  message: |
+    initiating storage shutdown ...
+  description: |
+    This message is a part of the logs that indicate that a shutdown of Aerospike process was initiated.
+
+- severity: "INFO"
+  context: "storage"
+  introduced: "3.0"
+  removed: "4.6.0.2"
+  message: |
+    flushing data to storage ...
+  description: |
+    This message is a part of the logs that indicate that a shutdown of Aerospike process was initiated. This message signifies that the data in write memory
+    buffer is being flushed to persistence. This includes arena stages, persisted roots and base blocks.
+
+- severity: "INFO"
+  context: "storage"
+  introduced: "3.0"
+  removed: "4.6.0.2"
+  message: |
+    completed flushing to storage
+  description: |
+    This message is a part of the logs that indicate that a shutdown of Aerospike process was initiated. This message signifies that the data in write memory
+    buffer has been successfully flushed to persistence.
+

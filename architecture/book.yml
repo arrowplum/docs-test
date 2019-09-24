@@ -1,0 +1,35 @@
+title: Architecture
+assets: /docs/architecture/assets
+baseurl: /docs/architecture
+
+contents:
+  - title: Overview
+    href: index.html
+  - title: Data Management
+    href: data-management.html
+    children:
+      - title: Data Model
+        href: data-model.html
+      - title: Primary Index
+        href: primary-index.html
+      - title: Secondary Index
+        href: secondary-index.html
+      - title: Hybrid Storage
+        href: storage.html
+  - title: Distribution
+    href: distribution.html
+    children:
+      - title: Data Distribution
+        href: data-distribution.html
+      - title: Clustering
+        href: clustering.html
+      - title: Cross Data-Center Replication
+        href: xdr.html
+      - title: Rack Awareness
+        href: rack-aware.html
+  - title: User-Defined Functions
+    href: udf.html
+  - title: Clients
+    href: clients.html
+  - title: ACID
+    href: acid.html

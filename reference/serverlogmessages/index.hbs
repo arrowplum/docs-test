@@ -1,0 +1,354 @@
+---
+layout: page-div
+title: Log Reference
+description: Learn the structure of log messages and how to understand the messages recorded in the Aerospike log files.
+nav-id: logs
+
+---
+<link rel="stylesheet" type="text/css" href="/assets/styles/layouts/references.css">
+
+<div class="columns small-12 medium-12">
+    <h1>Log Reference</h1>
+
+    <!-- # Changing Log Levels -->
+    <div class="panel-group" id="config-accord" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="config_head_1">
+                <h4 class="panel-title docs-section-heading">
+                    <span class="collapsed" role="button" data-toggle="collapse"
+                          data-parent="#config-accord"  href="#config_col_1"
+                          aria-expanded="false" aria-controls="config_col_1">
+                        <a class="primary" href="#">Changing Log Levels</a>
+                    </span>
+                </h4>
+            </div>
+            <div id="config_col_1" class="panel-collapse collapse" role="tabpanel" aria-labelledby="config_head_1">
+                <section class="runtime-config">
+                    <br/>
+                    {{#markdown}}
+Understanding the messages recorded in the Aerospike log file is instrumental in figuring out how your instance is performing and being able to detect errors early on. This document outlines the structure of the log messages and provides details on log messages which provide key information about the instance.
+
+Here are useful asinfo commands relevant to the server logs:
+
+- `asinfo -v "logs"` returns a list of log file locations in use by this server.
+
+```asciidoc
+$ asinfo -v "logs"
+0:/var/log/aerospike/aerospike.log
+```
+
+- `asinfo -v "log/"` returns a list of logging contexts and their associated verbosity levels. See further detail in [asinfo manual](/docs/reference/info#log). For the full list of contexts, refer to the list at the bottom of this page
+([Contexts](/docs/reference/serverlogmessages#contexts)).
+
+- `asinfo -v "log-set:id=<SINK_ID>;<CONTEXT>=<VERBOSITY>"` sets log level for the given context. See further detail in [asinfo manual](/docs/reference/info#log-set).
+
+```asciidoc
+$ asinfo -v "log-set:id=0;fabric=debug"
+ok
+```
+                    {{/markdown}}
+                </section>
+            </div>
+        </div>
+
+        <!-- # Log Line Format -->
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="config_head_2">
+                <h4 class="panel-title docs-section-heading">
+                    <span class="collapsed" role="button" data-toggle="collapse"
+                          data-parent="#config-accord"  href="#config_col_2"
+                          aria-expanded="false" aria-controls="config_col_2">
+                        <a class="primary" href="#">Log Line Format</a>
+                    </span>
+                </h4>
+            </div>
+            <div id="config_col_2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="config_head_2">
+                <section class="runtime-config">
+                    <br/>
+                    {{#markdown}}
+All Aerospike log lines take the following form:
+
+```asciidoc
+<date-time>: <severity> (<context>): (<file>:<line>) <message>
+```
+
+* **date-time**: Date and time the log message was recorded. Example: `Sep 20 2013 02:49:46 GMT`
+* **severity**: Severity level of the log message. For details, see Severity
+Levels.
+* **context**: Component in the server which logged the message. For details, see Contexts.
+* **file:line**: Location in the source code where the message was logged.
+* **message**: Mmessage being logged.
+                    {{/markdown}}
+                </section>
+            </div>
+        </div>
+
+        <!-- # Contexts -->
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="config_head_3">
+                <h4 class="panel-title docs-section-heading">
+                    <span class="collapsed" role="button" data-toggle="collapse"
+                          data-parent="#config-accord"  href="#config_col_3"
+                          aria-expanded="false" aria-controls="config_col_3">
+                        <a class="primary" href="#">Contexts</a>
+                    </span>
+                </h4>
+            </div>
+            <div id="config_col_3" class="panel-collapse collapse" role="tabpanel" aria-labelledby="config_head_3">
+                <section class="runtime-config">
+                    <br/>
+                    {{#markdown}}
+Contexts indicate which component a log message was emitted from. For the ful list of contexts, run the following command:
+
+```asciidoc
+$ asinfo -v "log/" -l
+misc:INFO
+alloc:INFO
+arenax:INFO
+hardware:INFO
+jem:INFO
+msg:INFO
+rbuffer:INFO
+socket:INFO
+tls:INFO
+aggr:INFO
+as:INFO
+batch:INFO
+bin:INFO
+config:INFO
+clustering:INFO
+compression:INFO
+demarshal:INFO
+drv_ssd:INFO
+exchange:INFO
+fabric:INFO
+geo:INFO
+hb:INFO
+hlc:INFO
+index:INFO
+info:INFO
+info-port:INFO
+job:INFO
+migrate:INFO
+mon:INFO
+namespace:INFO
+nsup:INFO
+particle:INFO
+partition:INFO
+paxos:INFO
+predexp:INFO
+proto:INFO
+proxy:INFO
+proxy-divert:INFO
+query:INFO
+record:INFO
+rw:INFO
+rw-client:INFO
+scan:INFO
+security:INFO
+sindex:INFO
+smd:INFO
+storage:INFO
+truncate:INFO
+tsvc:INFO
+udf:INFO
+xdr:INFO
+```
+
+{{#note}}
+rw-client and proxy-divert contexts added in version 3.16.0.1.
+{{/note}}
+
+{{#note}}
+Contexts the leading `cf:` in front of some of the context names was dropped as of version 3.13.
+{{/note}}
+
+Some of the commonly referred to contexts:
+
+Context | Description
+--------|------------
+as      | Typically Aerospike initialization information.
+drv_ssd | Persistent storage related information (not necessarily ssd).
+info    | Somewhat overloaded context that provides information about various systems.
+nsup    | Namespace supervisor messages.
+                    {{/markdown}}
+                </section>
+            </div>
+        </div>
+
+        <!-- # Severity Levels -->
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="config_head_4">
+                <h4 class="panel-title docs-section-heading">
+                    <span class="collapsed" role="button" data-toggle="collapse"
+                          data-parent="#config-accord"  href="#config_col_4"
+                          aria-expanded="false" aria-controls="config_col_4">
+                        <a class="primary" href="#">Severity Levels</a>
+                    </span>
+                </h4>
+            </div>
+            <div id="config_col_4" class="panel-collapse collapse" role="tabpanel" aria-labelledby="config_head_4">
+                <section class="runtime-config">
+                    <br/>
+                    {{#markdown}}
+Severity levels indicate the importance of a log message. During normal operation, you should see messages with mostly INFO levels. If some problems occur due, then you will begin seeing messages with WARNING levels. If an error occurred, which severely impacts the operation of the database, then messages of CRITICAL level are logged. Usually, when a CRITICAL level message is logged, it indicates the server is also shutting down, requiring user intervention.
+
+By default, Aerospike logs messages at INFO level and above. The Aerospike Configuration can be modified to log lower level messages for debugging purposes.
+
+Severity | Description
+---------|------------
+CRITICAL | Critical error messages. Indicates a fatal error has occurred, usually resulting in Aerospike shutdown.
+WARNING  | Warning messages.
+INFO     | Informational messages.
+DEBUG    | Debugging information.
+DETAIL   | Verbose debugging information.
+                    {{/markdown}}
+                </section>
+            </div>
+        </div>
+    </div>
+    {{#markdown}}
+### Common Log Messages
+    {{/markdown}}
+    <div id="configuration-table-header">
+        <div id="show-removed">
+            <input type="checkbox" id="show-removed-box" />
+            <label for="show-removed">Show <span id="num-removed"></span> removed log statements</label>
+        </div>
+        <input type="search" id="config-filter" placeholder="Enter search text"/>
+    </div>
+
+    <table id="logs-table" class="reference logs" style="width:100%">
+        <thead>
+            <tr>
+                <th>Log Line</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {{#withSort logs "context"}}
+                <tr class="param-entry{{#removed}} removed{{/removed}}">
+                    <td>
+                        <a name="{{string-hash message}}"></a>
+                        <a class="relative-anchor" href="#{{string-hash message}}">
+                            <pre class="param-name">{{#markdown}}{{message}}{{/markdown}}</pre>
+                        </a>
+                        <div class="param-detail">
+                            <div><strong>Severity:<br/></strong> {{severity}}</div>
+                            <div><strong>Context:<br/></strong> {{context}}</div>
+                            <div>{{#introduced}}<strong>Introduced:<br/></strong> {{.}}{{/introduced}}</div>
+                            <div>
+                                {{#removed}}
+                                    <span class='removed'>
+                                        <strong>Removed:</strong><br/> {{.}}
+                                    </span>
+                                {{/removed}}
+                            </div>
+                        </div>
+                        <details>
+                            <summary>Additional Information</summary>
+                            <p>
+                                {{#description}}{{#markdown}}{{.}}{{/markdown}}{{/description}}
+                                {{#occurs}}{{#markdown}}**Occurs**: {{.}}{{/markdown}}{{/occurs}}
+                                {{#if parameters}}
+                                    <div><strong>Parameters:</strong>
+                                        <ul>
+                                {{/if}}
+                                {{#each parameters}}
+                                    <li>{{#markdown}}**{{name}}**: {{description}}{{/markdown}}</li>
+                                {{/each}}
+                                {{#if parameters}}
+                                        </ul>
+                                    </div>
+                                {{/if}}
+                            </p>
+                        </details>
+                    </td>
+                </tr>
+            {{/withSort}}
+        </tbody>
+    </table>
+</div>
+
+<script>
+     (function () {         
+        function getParm(name) {
+            var names = new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)').exec(location.search);
+            if (names) {
+                return decodeURIComponent(names[1]);
+            }
+            return null;
+        }
+
+        function tryPushState(queryString) {
+            if (queryString.charAt(0) != "?") {
+                queryString = "?" + queryString;
+            }
+            var hash = window.location.hash || "";
+            var pathname = window.location.pathname || "";
+            queryString = pathname + queryString + hash;
+            if (typeof history.pushState == "function") {
+                history.pushState(null, null, queryString);
+            } else {
+                window.location.search = queryString;
+            }
+        }
+
+        function runTableFilters(term) {
+            term = term && term.toLowerCase();
+            let entries = $("table.reference .param-entry");
+            entries.show();
+            entries.filter(function () {
+                if (! $("#show-removed-box").prop("checked") && $(this).hasClass("removed")) {
+                    return true; // still hide removed
+                }
+                return term && this.innerText.toLowerCase().indexOf(term) === -1;
+            }).hide();
+            
+            $("table.reference .group-block").show();
+            $("table.reference .group-block").filter(function () {
+                return $(".param-entry:visible", this).length === 0;
+            }).hide();
+        }
+
+        function processAnchorLinks() {
+            $("a.relative-anchor").attr("href", function() {
+                return window.location.pathname + window.location.search + "#" + $(this).attr("href").split("#").pop();
+            }).click(function() {
+                if (typeof this.scrollIntoView === "function" && typeof history.pushState == "function") {
+                    this.scrollIntoView();
+                    history.pushState(null, null, $(this).attr("href"));
+                    return false;
+                }
+            });
+
+        }
+
+        $("#config-filter").on("input", _.debounce(function () {
+            let term = this.value;
+            runTableFilters(term);
+        }, 200));
+
+        $("#show-removed-box").on("change", function () {
+            if (this.checked) {
+                tryPushState("?show-removed=1");
+                processAnchorLinks();
+            } else {
+                tryPushState("?show-removed=0");
+                processAnchorLinks();
+            }
+
+            runTableFilters($("#config-filter").value);
+        });
+
+        if (getParm("show-removed") === "1") {
+            $("#show-removed-box").prop("checked", true);
+        } else {
+            $("#show-removed-box").prop("checked", false);
+        }
+
+        $("#num-removed").text($("table.reference .param-entry.removed").length);
+        runTableFilters();
+        processAnchorLinks();
+    }());
+</script>

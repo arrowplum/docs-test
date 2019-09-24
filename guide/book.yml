@@ -1,0 +1,7 @@
+title: Feature Guides
+assets: /docs/guide/assets
+baseurl: /docs/guide
+
+contents:
+  - title: Overview
+    href: .

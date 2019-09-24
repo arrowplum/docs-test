@@ -1,0 +1,9 @@
+title: Google Compute Deployment Guide
+
+baseurl: /docs/deploy_guides/gcp
+assets: /docs/deploy_guides/gcp/assets
+
+contents:
+  - title: Overview
+    href: .
+

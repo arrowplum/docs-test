@@ -1,0 +1,3900 @@
+commands:
+  - name       : "bins"
+    since      : "3.3.0"
+    dnd        : false
+    purpose: |
+      bin usage information and used bin names for all or a particular namespace.
+    command: |
+      bins[/<NAMESPACE>]
+    parameters:
+      - name: "NAMESPACE"
+        description: |
+          Where NAMESPACE is the name of a namespace that exists on this server.
+    output:
+      - title: "Without NAMESPACE"
+        description: |
+          stats and names for each namespace. Namespace names are suffixed with a colon ':' and the bin stats
+          and names are comma ',' separated.  Bin stat names and values are separated by an equals '='.
+          The end of stats list is delimited by a semicolon ';' and may be followed by more namespaces.
+      - title: "With NAMESPACE"
+        description: |
+          Returns comma ',' separated statistics and bin names for the provided namespace.
+          Statistics are separated from their values by an equals '='.
+    examples:
+      - title: "Without NAMESPACE"
+        sample: |
+          asinfo -v 'bins'
+          test:num-bin-names=7,bin-names-quota=32768,str_100_bin,
+          str_uniq_bin,int_uniq_bin,seed,dynamic_str,dynamic_int,
+          fill_bin;
+      - title: "With NAMESPACE"
+        sample: |
+          asinfo -v 'bins/test'
+          num-bin-names=7,bin-names-quota=32768,str_100_bin,
+          str_uniq_bin,int_uniq_bin,seed,dynamic_str,
+          dynamic_int,fill_bin
+    related:
+      - name: "namespace"
+      - name: "namespaces"
+      - name: "sets"
+      - name: "statistics"
+
+  - name       : "build"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns the build number for this server.
+    command    : "build"
+    output     :
+      description: |
+        Aerospike build id (version) of this server.<br/>
+        Version number format:<br/>
+        Major.Minor.Build
+    examples:
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'build'
+          3.2.8
+
+  - name       : "dump-skew"
+    since      : "4.0"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Print out clock skew information across the cluster nodes.
+    command    : "dump-skew:"
+    output     :
+      description: |
+        The clock skew for the cluster.
+    examples:
+      - title: "Print clock skew between nodes in the log"
+        sample: |
+          asinfo -v 'dump-skew:'
+          ok
+          ```
+          May 03 2018 23:54:09 GMT: INFO (skew): (skew_monitor.c:587) CSM: cluster-clock-skew:0
+          May 03 2018 23:54:09 GMT: INFO (skew): (skew_monitor.c:598) CSM:    node:bb997a7833e1600 hlc-delta:0
+          May 03 2018 23:54:09 GMT: INFO (skew): (skew_monitor.c:598) CSM:    node:bb96544c23e1600 hlc-delta:0
+          May 03 2018 23:54:09 GMT: INFO (skew): (skew_monitor.c:598) CSM:    node:bb93fe99a3e1600 hlc-delta:0
+          ```
+
+  - name       : "dun"
+    since      : "3.3.0"
+    removed    : "3.9.1"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Instruct this server to ignore another node.
+    command    : |
+      dun:nodes=<NODE ID>[,NODE ID,..]
+    parameters :
+      - name: "nodes"
+        description: |
+          Comma ',' separated list of Node IDs. See `node` command to retrieve
+          the Node ID for a particular server.
+    output:
+      description: |
+        Returns "ok" on success, "error" on failure.
+    examples:
+      - title: "Dun one node"
+        sample: |
+          asinfo -v 'dun:nodes=BB936F106CA0568'
+          ok
+      - title: "Dun multiple nodes"
+        sample: |
+          asinfo -v 'dun:nodes=BB936F106CA0568,BB96CDE06CA0568,BB968DF04CA0568'
+          ok
+    related:
+      - name: "mcast"
+      - name: "mesh"
+      - name: "node"
+      - name: "tip"
+      - name: "tip-clear"
+      - name: "undun"
+
+
+  - name       : "get-config"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns running config for all or a particular context.
+    command    : |
+      get-config[:context=CONTEXT]
+      get-config:context=namespace<;id=NAMESPACE>
+    parameters :
+      - name: "context"
+        description: |
+          Configuration context to retrieve.<br>
+          Options:
+          * **namespace**
+          * **network**
+          * **service**
+          * **xdr**
+
+          If context is not included the behavior returns configuration for all
+          contexts excluding namespaces.
+      - name: "id"
+        description: |
+          Used for namespace context only. Is the name of the namespace to get
+          the configuration for.
+    examples:
+      - title: "Retrieve configuration for all contexts(Server version 4.5.1 and above)"
+        sample: |
+          asinfo -v "get-config" -l
+          paxos-single-replica-limit=1
+          pidfile=/var/run/aerospike/asd.pid
+          proto-fd-max=10000
+          advertise-ipv6=true
+          auto-pin=none
+          batch-index-threads=2
+          batch-max-buffers-per-queue=255
+          batch-max-requests=5000
+          batch-max-unused-buffers=256
+          cluster-name=v24dc1
+          enable-benchmarks-fabric=false
+          enable-benchmarks-svc=false
+          enable-health-check=false
+          enable-hist-info=false
+          feature-key-file=/etc/aerospike/features.conf
+          hist-track-back=300
+          hist-track-slice=10
+          hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          info-threads=16
+          keep-caps-ssd-health=false
+          log-local-time=false
+          log-millis=false
+          migrate-fill-delay=0
+          migrate-max-num-incoming=4
+          migrate-threads=1
+          min-cluster-size=1
+          node-id=BB9117BC5005452
+          node-id-interface=null
+          proto-fd-idle-ms=60000
+          proto-slow-netio-sleep-ms=1
+          query-batch-size=100
+          query-buf-size=2097152
+          query-bufpool-size=256
+          query-in-transaction-thread=false
+          query-long-q-max-size=500
+          query-microbenchmark=false
+          query-pre-reserve-partitions=false
+          query-priority=10
+          query-priority-sleep-us=1
+          query-rec-count-bound=18446744073709551615
+          query-req-in-query-thread=false
+          query-req-max-inflight=1
+          query-short-q-max-size=500
+          query-threads=1
+          query-threshold=10
+          query-untracked-time-ms=1000
+          query-worker-threads=1
+          run-as-daemon=true
+          scan-max-active=100
+          scan-max-done=100
+          scan-max-udf-transactions=32
+          scan-threads=4
+          service-threads=2
+          sindex-builder-threads=16
+          sindex-gc-max-rate=50000
+          sindex-gc-period=10
+          ticker-interval=10
+          transaction-max-ms=1000
+          transaction-queues=2
+          transaction-retry-ms=1002
+          transaction-threads-per-queue=3
+          work-directory=/opt/aerospike
+          debug-allocations=none
+          fabric-dump-msgs=false
+          service.port=3000
+          service.address=eth4
+          service.address=eth5
+          service.access-port=0
+          service.access-address=eth5
+          service.alternate-access-port=0
+          service.tls-port=4333
+          service.tls-access-port=0
+          service.tls-alternate-access-port=0
+          service.tls-name=v24dc1
+          service.tls-authenticate-client=any
+          heartbeat.mode=multicast
+          heartbeat.address=eth4
+          heartbeat.multicast-group=239.1.97.222
+          heartbeat.port=9917
+          heartbeat.interval=500
+          heartbeat.timeout=20
+          heartbeat.mtu=1500
+          heartbeat.protocol=v3
+          fabric.address=any
+          fabric.port=3001
+          fabric.tls-port=0
+          fabric.tls-name=null
+          fabric.channel-bulk-fds=2
+          fabric.channel-bulk-recv-threads=4
+          fabric.channel-ctrl-fds=1
+          fabric.channel-ctrl-recv-threads=4
+          fabric.channel-meta-fds=1
+          fabric.channel-meta-recv-threads=4
+          fabric.channel-rw-fds=8
+          fabric.channel-rw-recv-threads=16
+          fabric.keepalive-enabled=true
+          fabric.keepalive-intvl=1
+          fabric.keepalive-probes=10
+          fabric.keepalive-time=1
+          fabric.latency-max-ms=5
+          fabric.recv-rearm-threshold=1024
+          fabric.send-threads=8
+          info.address=eth4
+          info.port=3003
+          tls[0].name=v24dc1
+          tls[0].ca-file=/opt/aerospike/tls/cacert.pem
+          tls[0].ca-path=null
+          tls[0].cert-blacklist=null
+          tls[0].cert-file=/opt/aerospike/tls/cluster_chain.pem
+          tls[0].cipher-suite=null
+          tls[0].key-file=/opt/aerospike/tls/key.pem
+          tls[0].key-file-password=null
+          tls[0].protocols=null
+          enable-ldap=false
+          enable-security=false
+          ldap-login-threads=8
+          privilege-refresh-period=300
+          ldap.disable-tls=false
+          ldap.polling-period=300
+          ldap.query-base-dn=null
+          ldap.query-user-dn=null
+          ldap.query-user-password-file=null
+          ldap.role-query-base-dn=null
+          ldap.role-query-search-ou=false
+          ldap.server=null
+          ldap.session-ttl=86400
+          ldap.tls-ca-file=null
+          ldap.token-hash-method=sha-256
+          ldap.user-dn-pattern=null
+          ldap.user-query-pattern=null
+          report-authentication-sinks=0
+          report-data-op-sinks=0
+          report-sys-admin-sinks=0
+          report-user-admin-sinks=0
+          report-violation-sinks=0
+          syslog-local=-1
+          enable-xdr=false
+          enable-change-notification=false
+          forward-xdr-writes=false
+          xdr-delete-shipping-enabled=true
+          xdr-nsup-deletes-enabled=false
+          xdr-shipping-enabled=true
+          xdr-ship-bins=false
+          xdr-write-timeout=10000
+          xdr-client-threads=3
+          xdr-max-ship-throughput=0
+          xdr-max-ship-bandwidth=0
+          xdr-hotkey-time-ms=100
+          xdr-read-threads=4
+          xdr-info-timeout=10000
+          xdr-compression-threshold=0
+          xdr-digestlog-iowait-ms=500
+          xdr-digestlog-size=104857600
+          xdr-min-digestlog-free-pct=0
+          xdr-digestlog-path=/opt/digestlog
+
+      - title: "Retrieve network configuration(Server version 4.5.1 and above)"
+        sample: |
+          asinfo -v 'get-config:context=network' -l
+          service.port=3000
+          service.address=eth4
+          service.address=eth5
+          service.access-port=0
+          service.access-address=eth5
+          service.alternate-access-port=0
+          service.tls-port=4333
+          service.tls-access-port=0
+          service.tls-alternate-access-port=0
+          service.tls-name=v24dc1
+          service.tls-authenticate-client=any
+          heartbeat.mode=multicast
+          heartbeat.address=eth4
+          heartbeat.multicast-group=239.1.97.222
+          heartbeat.port=9917
+          heartbeat.interval=500
+          heartbeat.timeout=20
+          heartbeat.mtu=1500
+          heartbeat.protocol=v3
+          fabric.address=any
+          fabric.port=3001
+          fabric.tls-port=0
+          fabric.tls-name=null
+          fabric.channel-bulk-fds=2
+          fabric.channel-bulk-recv-threads=4
+          fabric.channel-ctrl-fds=1
+          fabric.channel-ctrl-recv-threads=4
+          fabric.channel-meta-fds=1
+          fabric.channel-meta-recv-threads=4
+          fabric.channel-rw-fds=8
+          fabric.channel-rw-recv-threads=16
+          fabric.keepalive-enabled=true
+          fabric.keepalive-intvl=1
+          fabric.keepalive-probes=10
+          fabric.keepalive-time=1
+          fabric.latency-max-ms=5
+          fabric.recv-rearm-threshold=1024
+          fabric.send-threads=8
+          info.address=eth4
+          info.port=3003
+          tls[0].name=v24dc1
+          tls[0].ca-file=/opt/aerospike/tls/cacert.pem
+          tls[0].ca-path=null
+          tls[0].cert-blacklist=null
+          tls[0].cert-file=/opt/aerospike/tls/cluster_chain.pem
+          tls[0].cipher-suite=null
+          tls[0].key-file=/opt/aerospike/tls/key.pem
+          tls[0].key-file-password=null
+          tls[0].protocols=null
+
+      - title: "Retrieve network.info configuration (versions prior to 3.9)"
+        sample: |
+          asinfo -v 'get-config:context=network.info'
+          service-address=0.0.0.0;service-port=3000;reuse-address=true;fabric-port=3001;network-info-port=3003; \
+          enable-fastpath=true
+
+      - title: "Retrieve configuration for namespace test(Server version 4.5.1 and above)"
+        sample: |
+          asinfo -v 'get-config:context=namespace;id=test' -l
+          replication-factor=2
+          memory-size=1073741824
+          default-ttl=86400
+          enable-xdr=false
+          sets-enable-xdr=true
+          ns-forward-xdr-writes=false
+          allow-nonxdr-writes=true
+          allow-xdr-writes=true
+          {test}-read-hist-track-back=300
+          {test}-read-hist-track-slice=10
+          {test}-read-hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          {test}-query-hist-track-back=300
+          {test}-query-hist-track-slice=10
+          {test}-query-hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          {test}-udf-hist-track-back=300
+          {test}-udf-hist-track-slice=10
+          {test}-udf-hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          {test}-write-hist-track-back=300
+          {test}-write-hist-track-slice=10
+          {test}-write-hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          conflict-resolution-policy=generation
+          data-in-index=false
+          disable-cold-start-eviction=false
+          disable-write-dup-res=false
+          disallow-null-setname=false
+          enable-benchmarks-batch-sub=false
+          enable-benchmarks-read=false
+          enable-benchmarks-udf=false
+          enable-benchmarks-udf-sub=false
+          enable-benchmarks-write=false
+          enable-hist-proxy=false
+          evict-hist-buckets=10000
+          evict-tenths-pct=5
+          high-water-disk-pct=50
+          high-water-memory-pct=60
+          index-stage-size=1073741824
+          index-type=shmem
+          migrate-order=5
+          migrate-retransmit-ms=5000
+          migrate-sleep=1
+          nsup-hist-period=3600
+          nsup-period=120
+          nsup-threads=1
+          partition-tree-sprigs=256
+          prefer-uniform-balance=false
+          rack-id=0
+          read-consistency-level-override=off
+          single-bin=false
+          stop-writes-pct=90
+          strong-consistency=false
+          strong-consistency-allow-expunge=false
+          tomb-raider-eligible-age=86400
+          tomb-raider-period=86400
+          transaction-pending-limit=20
+          write-commit-level-override=off
+          storage-engine=device
+          storage-engine.file[0]=/opt/aerospike/test0.dat
+          storage-engine.file[1]=/opt/aerospike/test2.dat
+          storage-engine.filesize=4294967296
+          storage-engine.scheduler-mode=null
+          storage-engine.write-block-size=131072
+          storage-engine.data-in-memory=true
+          storage-engine.cold-start-empty=true
+          storage-engine.commit-to-device=false
+          storage-engine.commit-min-size=0
+          storage-engine.compression=zstd
+          storage-engine.compression-level=0
+          storage-engine.defrag-lwm-pct=50
+          storage-engine.defrag-queue-min=0
+          storage-engine.defrag-sleep=1000
+          storage-engine.defrag-startup-minimum=10
+          storage-engine.direct-files=false
+          storage-engine.enable-benchmarks-storage=false
+          storage-engine.encryption-key-file=null
+          storage-engine.flush-max-ms=1000
+          storage-engine.max-write-cache=67108864
+          storage-engine.min-avail-pct=5
+          storage-engine.post-write-queue=0
+          storage-engine.read-page-cache=false
+          storage-engine.serialize-tomb-raider=false
+          storage-engine.tomb-raider-sleep=1000
+          sindex.num-partitions=32
+          geo2dsphere-within.strict=true
+          geo2dsphere-within.min-level=1
+          geo2dsphere-within.max-level=30
+          geo2dsphere-within.max-cells=12
+          geo2dsphere-within.level-mod=1
+          geo2dsphere-within.earth-radius-meters=6371000
+
+    related:
+      - name: "namespace"
+      - name: "set-config"
+
+  - name       : "dc/DC_NAME"
+    ee-only    : true
+    since      : "3.6.0"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+     Returns the XDR statistics specific to each XDR destination.
+    command    : |
+     dc/<DC_NAME>
+    output     :
+      description : |
+       Returns the statistics such as the state of the destination, the timelag, the number of shipping and delete attempts to each remote datacenter etc. 
+       These are valid and available for the datacenters defined in the XDR stanza on the source cluster.
+    examples    :
+      - title: "Versions above 3.8"
+        sample    : |
+          asinfo -v dc/REMOTE_DC_1 -l
+          dc_state=CLUSTER_UP
+          dc_timelag=0
+          dc_rec_ship_attempts=58374
+          dc_delete_ship_attempts=0
+          dc_remote_ship_ok=58121
+          dc_err_ship_client=38
+          dc_err_ship_server=0
+          dc_esmt_bytes_shipped=5662278
+          dc_esmt_ship_avg_comp_pct=0.00
+          dc_latency_avg_ship=0
+          dc_remote_ship_avg_sleep=0.000
+          dc_open_conn=192
+          dc_recs_inflight=216
+          dc_size=3
+      - title: "Versions up to 3.7.5"
+        sample    : |
+          asinfo -v dc/REMOTE_DC_1 -p 3004 -l
+          xdr-dc-state=CLUSTER_UP
+          xdr-dc-timelag=0
+          xdr-dc-rec-ship-attempts=0
+          xdr-dc-delete-ship-attempts=0
+          esmt-bytes-shipped-compression=0
+          esmt-ship-compression=0.00%
+          lst-main=1459856431988
+          lst-windowship=18446744073709551615
+          lst-failednode=18446744073709551615
+          lst-localmin=0
+
+
+  - name       : "get-dc-config"
+    ee-only    : true
+    since      : "3.6.0"
+    dnd        : false
+    purpose    : |
+     Returns the configurations for the XDR datacenters. For each datacenter, this lists the following information:<br><br>
+     Versions 3.8 and above: Name of the DC, seeded destination nodes, internal to external IP mappings (if any), <br>
+     alternate services list in use or not, and namespaces configured to ship to the DC.<br><br>
+     Versions up to 3.7.5: Name of the DC, seeded destination nodes, internal to external IP mappings (if any), <br>
+     and namespaces configured to ship to the DC.
+    command    : |
+     get-dc-config
+    output     :
+      description : |
+       Return value is in the following format:
+
+        Versions 4.5.0.1 and above:
+        ```asciidoc
+        dc-name=<dcname>:dc-type<aerospike|http>:tls-name=<tls-name>:dc-security-config-file=</path/to/file>
+        nodes=<ip>+<port>:int-ext-ipmap=<internal-ip><external-ip>:
+        dc-connections=<connections>:dc-connections-idle-ms=<idle time>:dc-use-alternate-services=<true|false>:
+        namespaces=<ns1>,<ns2>,<ns3>;
+        ```
+        Versions 4.4.0.4 and 4.5.0.1:
+        ```asciidoc
+        dc-name=<dcname>:dc-type<aerospike|http>:tls-name=<tls-name>:nodes=<ip>+<port>:int-ext-ipmap=<internal-ip><external-ip>:
+        dc-connections=<connections>:dc-connections-idle-ms=<idle time>:dc-use-alternate-services=<true|false>:
+        namespaces=<ns1>,<ns2>,<ns3>;
+        ```
+        Versions 3.15.0.1 and 4.4.0.4:
+        ```asciidoc
+        dc-name=<dcname>:nodes=<ip>+<port>:int-ext-ipmap=<internal-ip><external-ip>:
+        dc-connections=<connections>:dc-connections-idle-ms=<idle time>:dc-use-alternate-services=<true|false>:
+        tls-name=<tls-name>:namespaces=<ns1>,<ns2>,<ns3>;
+        ```
+        Versions between 3.14.1.1 and 3.15.0.1:
+        ```asciidoc
+        dc-name=<dcname>:nodes=<ip>+<port>,<ip>+<port>:int-ext-ipmap=<internal-ip><external-ip>:
+        dc-connections=<connections>:dc-connections-idle-ms=<idle time>:dc-use-alternate-services=<true|false>:
+        tls-cafile=<path to ca file>:tls-capath=<path to ca dir>:tls-certfile=<path to cert file>:
+        tls-keyfile=<path to key file>:tls-cert-blacklist=<blacklist certs>:namespaces=<ns1>,<ns2>,<ns3>;
+        ```
+        Versions between 3.8 and 3.14.1.1:
+        ```asciidoc
+        DC_Name=<dcname>:Nodes=<ip>+<port>,<ip>+<port>:int-ext-ipmap=<internal-ip><external-ip>:
+        dc-use-alternate-services=<true|false>:namespaces=<ns1>,<ns2>,<ns3>;
+        ```
+        Versions up to 3.7.5:
+        ```asciidoc
+        DC_Name1=<dcname>:Nodes=<ip>+<port>,<ip>+<port>:int-ext-ipmap=<internal-ip><external-ip>:
+        namespaces=<ns1>,<ns2>,<ns3>;
+        ```
+    examples:
+      - title: "Versions 4.5.0.1 and above"
+        sample: |
+          asinfo -v get-dc-config
+          dc-name=REMOTE_DC:dc-type=aerospike:tls-name=:dc-security-config-file=/private/aerospike/security_credentials_REMOTE_DC.txt:\
+          nodes=192.168.100.140+3000,192.168.100.147+3000:int-ext-ipmap=:dc-connections=64:\
+          dc-connections-idle-ms=55000:dc-use-alternate-services=false:namespaces=test
+      - title: "Versions between 4.4.0.4 and 4.5.0.1"
+        sample: |
+          asinfo -v get-dc-config
+          dc-name=REMOTE_DC:dc-type=aerospike:tls-name=:\
+          nodes=192.168.100.140+3000,192.168.100.147+3000:int-ext-ipmap=:dc-connections=64:\
+          dc-connections-idle-ms=55000:dc-use-alternate-services=false:namespaces=test
+      - title: "Versions between 3.15.0.1 and 4.4.0.4"
+        sample: |
+          asinfo -v get-dc-config
+          dc-name=REMOTE_DC:nodes=192.168.100.140+3000,192.168.100.147+3000:int-ext-ipmap=:dc-connections=64:\
+          dc-connections-idle-ms=55000:dc-use-alternate-services=false:tls-name=:namespaces=test
+      - title: "Versions between 3.14.1.1 and 3.15.0.1"
+        sample: |
+          asinfo -v get-dc-config
+          dc-name=REMOTE_DC:nodes=192.168.100.140+3000,192.168.100.147+3000:int-ext-ipmap=:dc-connections=64:\
+          dc-connections-idle-ms=0:dc-use-alternate-services=false:tls-cafile=:tls-capath=:tls-certfile=:\
+          tls-keyfile=:tls-cert-blacklist=:namespaces=test
+      - title: "Versions between 3.8 and 3.14.1.1"
+        sample: |
+          asinfo -v get-dc-config
+          value is DC_Name=REMOTE_DC:Nodes=192.168.100.140+3000,192.168.100.147+3000:\
+          int-ext-ipmap=:dc-use-alternate-services=false:namespaces=test,storage
+      - title: "Versions up to 3.7.5"
+        sample: |
+          asinfo -p 3004 -v get-dc-config
+          value is DC_Name=dc1:Nodes=192.168.100.140+3000:int-ext-ipmap=:namespaces=test
+
+  - name       : "health-outliers"
+    since      : "4.3.1.3"
+    dnd        : false
+    purpose    : |
+      Returns list of outliers found and their info. Requires the 
+      [`enable-health-check`](/docs/reference/configuration/#enable-health-check) 
+      configuration to be enabled first.
+    command    : "health-outliers"
+    output     : 
+      description: |
+        Returns a list of tuples.<br/>
+        id=. . . :confidence-pct=. . . :reason=. . .<br/>
+        where:<br> 
+        - `id` is either node id or the device id which is declared as an outlier.<br/>
+        - `confidence-pct` is a metric when high denotes that the stat is highly skewed.<br/>
+        - `reason` is the description of the stat that is responsible for declaring id as an outlier.
+    examples: 
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'health-outliers' -l
+          id=bb9040011ac4202:confidence_pct=100:reason=fabric_connections_opened
+          id=bb9040011ac4202:confidence_pct=100:reason=proxies
+          id=bb9040011ac4202:confidence_pct=100:reason=node_arrivals
+          id=/opt/aerospike/data/bar2.dat:namespace=test:confidence_pct=100:reason=device_read_latency
+
+  - name       : "health-stats"
+    since      : "4.3.1.3"
+    dnd        : false
+    purpose    : |
+      Returns list of stats maintained by health-stats for reference. Requires the 
+      [`enable-health-check`](/docs/reference/configuration/#enable-health-check) 
+      configuration to be enabled first.
+    command    : "health-stats"
+    output     : 
+      description: |
+        Returns list of tuples.<br/>
+        stat=. . . :value=. . . :node/device=. . .<br/>
+        where:<br> 
+        - `stat` is used to identify the type of statistics.<br/>
+        - `value`is the current moving average.<br/>
+        - `node` is the node id.<br/>
+        - `device` is the device name, and the value for device_read_latency is in microseconds. 
+    examples: 
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'health-stats' -l
+          stat=fabric_connections_opened:value=0:node=BB9070011AC4202
+          stat=fabric_connections_opened:value=0:node=BB9030011AC4202
+          stat=fabric_connections_opened:value=0:node=BB9050011AC4202
+          stat=fabric_connections_opened:value=153:node=BB9040011AC4202
+          stat=test_device_read_latency:value=1408:device=/opt/aerospike/data/bar1.dat:namespace=test
+          stat=test_device_read_latency:value=306132:device=/opt/aerospike/data/bar2.dat:namespace=test
+          stat=test_device_read_latency:value=11630:device=/opt/aerospike/data/bar3.dat:namespace=test
+
+  - name       : "histogram"
+    since      : "4.2.0.2"
+    dnd        : false
+    purpose    : |
+      Returns a histogram snapshot for a namespace[/set] and histogram type. <br>Prior to version 4.5.1,
+      the **ttl** histogram is computed by the namespace supervisor (NSUP),
+      therefore, it is updated every NSUP interval or duration of an NSUP cycle
+      (whichever is longer), while the **object-size** and **object-size-linear** histograms are
+      updated every **[object-size-hist-period](/docs/reference/configuration#object-size-hist-period)** (default is 1 hour).
+      <br>As of version 4.5.1, all of these histograms are computed by NSUP and updated every
+      **[nsup-hist-period](/docs/reference/configuration#nsup-hist-period)** (default is 1 hour).
+    command    : |
+      histogram:namespace=<NAMESPACE>;[set=<SET>;]type=<TYPE>
+    parameters :
+      - name: "namespace"
+        description: |
+          Name of the _namespace_ to retrieve a histogram from.
+      - name: "type"
+        description: |
+          Type of histogram to be retrieved.<br>
+          Options:
+          * **ttl** - Time to live distribution of records represented as a linear histogram.
+          * **object-size** - Size distribution of objects (non-tombstones records) represented as a logarithmic histogram.
+          * **object-size-linear** - Size distribution of objects (non-tombstones records) represented as a linear histogram.
+      - name: "set"
+        description: |
+          (Optional) Name of a particular _set_ to retrieve a histogram from.
+    output     :
+      - title: "Linear Histograms"
+        description: |
+          Types: ttl, object-size-linear
+
+          Returns a linear histogram with the following format:<br>
+          <code>
+          units=UNITS:hist-width=HIST-WIDTH:bucket-width=BUCKET-WIDTH:buckets=BUCKETS;
+          </code><br>
+          Where:<br>
+          * **UNITS**: The unit type being represented. Notice that for
+            object-size, the unit is 'bytes' not 'rblocks'.
+          * **HIST-WIDTH**: The total size of the entire histogram. Notice that
+            for object-size this will equal the 'write-block-size' for the
+            namespace.
+          * **BUCKET-WIDTH**: The size of an individual bucket.
+          * **BUCKETS**: 1024 comma separated counters.
+      - title: "Logarithmic Histograms"
+        description: |
+          Types: object-size
+
+          Returns a logarithmic histogram with the following format:<br>
+          <code>
+          units=UNITS:INTERVALS
+          </code><br>
+          Where:<br>
+          * **UNITS**: The unit type being represented. Notice that for object-size, the unit is bytes' not 'rblocks'.
+          * **INTERVALS**: Only intervals having a value greater than 0 are shown. Interval keys use interval notation
+            where '[' means that it begins and includes this value and ')' means it ends at but does not include that
+            value. The value for each key is the number of elements that fall within this interval. Notice that the
+            intervals will also include an SI unit i.e. K=[2^10 to 2^20), M=[2^20 to 2^30), G=[2^30 to 2^40),
+            T=[2^40 to 2^50), P=[2^50 to 2^60], E=[2^60 to 2^70). Values exceeding 8E (8 Exaunits) are placed in the
+            last bucket which would be represented as [8E-inf).
+    examples   :
+      - title: "Logarithmic 'Object Size' histogram for namespace 'test'"
+        sample: |
+          asinfo -v 'histogram:type=object-size;namespace=test'
+          units=bytes:[64-128)=2964:[64K-128K)=1234
+      - title: "Linear 'Object Size' histogram for namespace 'test'"
+        sample: |
+          asinfo -v 'histogram:type=object-size-linear;namespace=test'
+          units=bytes:hist-width=8388608:bucket-width=8192:buckets=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,505,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+      - title: "Linear 'Time to Live' histogram for namespace 'test'"
+        sample: |
+          asinfo -v 'histogram:namespace=test;type=ttl'
+          <Output similar to linear 'Object Size' histogram>
+      - title: "Linear 'Time to Live' histogram for set 'testset' of namespace 'test'"
+        sample: |
+          asinfo -v 'histogram:namespace=test;set=testset;type=ttl'
+          <Output similar to linear 'Object Size' histogram>
+
+  - name       : "hist-dump"
+    since      : "3.3.0"
+    removed    : "4.2.0.2"
+    dnd        : false
+    purpose    : |
+      Returns a histogram snapshot for a particular histogram. Those histograms are computed by the namespace supervisor, therefore,
+      there may be some delay for them to be updated. The nsup-period
+      can be adjusted but it should be noted that it will run sequentially through each namespace and may take longer to complete based on
+      the number of records in each namespace.<BR>
+      Replaced by the info command histogram as of version 4.2.0.2. Refer to the [histogram](/docs/reference/info#histogram) info command for additional details.
+    command    : |
+      hist-dump:ns=<NAMESPACE>;hist=<HISTOGRAM>
+    parameters :
+      - name: "ns"
+        description: |
+          Name of the namespace to query a histogram from.
+      - name: "hist"
+        description: |
+          Name of the histogram to query.<br>
+          Options:
+          * **ttl**   - Time to live distribution of the records.
+          * **evict** - Histogram built and used by the eviction process (removed as of 3.8.0)
+          * **objsz** - Object (record) size distribution of the records.
+    output  :
+      - title: "ttl"
+        description: |
+          Returns a histogram with the following format:<br>
+          <code>
+          NAMESPACE:HISTOGRAM=NUM_BUCKETS,BUCKET_WIDTH,BUCKET_0,BUCKET_1,...
+          </code><br>
+          Where:<br>
+          * **HISTOGRAM** is ttl or evict<br>
+          * **NUM_BUCKETS** is 100<br>
+          * **BUCKET_WIDTH** varies based on data with the current max Void Time in
+            seconds.<br>
+            Note: Records with indefinite TTLs (TTL = 0) are not represented
+            in ttl or evict histograms.
+          * **BUCKET_0** are records between 0 \* BUCKET_WIDTH and
+            1 \* BUCKET_WIDTH.<br>
+          * **BUCKET_1** are records between 1 \* BUCKET_WIDTH and
+            2 \* BUCKET_WIDTH.<br>
+            **&hellip;**<br>
+          * **BUCKET_99** are records between 99 \* BUCKET_WIDTH and
+            100 \* BUCKET_WIDTH.<br>
+      - title: "objsz"
+        description: |
+          Returns a histogram with the following format:<br>
+          <code>
+          NAMESPACE:HISTOGRAM=NUM_BUCKETS,BUCKET_WIDTH,BUCKET_0,BUCKET_1,...
+          </code><br>
+          Where:<br>
+          * **HISTOGRAM** is objsz<br>
+          * **NUM_BUCKETS** is 100<br>
+          * **BUCKET_WIDTH** is 1 by default and indicates one rblock (Record Block)
+             which as of 3.1.3 is 128 bytes. The bucket width value can be increased by changing
+             [`obj-size-hist-max`](/docs/reference/configuration/#obj-size-hist-max) value. <br>
+          * **BUCKET_0** represents the number of master records fitting in more than 0 rblocks and strictly under 1 ` * BUCKET_WIDTH` rblock(s).
+            Since no records can fit into a number of rblocks stricly less 1 (which can only be 0 rblock), with the default
+            [`obj-size-hist-max`](/docs/reference/configuration/#obj-size-hist-max), BUCKET_0 is always 0.
+            <br>
+          * **BUCKET_1** represents the number of master records fitting in more than 1 ` * BUCKET_WIDTH` rblock(s) and stricly less than 2 ` * BUCKET_WIDTH` rblocks.<br>
+            **&hellip;**<br>
+          * **BUCKET_99** represents the number of master records fitting in more than 99 ` * BUCKET_WIDTH` rblocks.<br>
+          <br>
+          If the last bucket has a non null number of records, it would be necessary to increase the [`obj-size-hist-max`](/docs/reference/configuration/#obj-size-hist-max)
+          and wait for an nsup cycle to complete in order to make sure the total range of object sizes in the namespace is covered,
+          As of Aerospike Version 3.6.1, the objsz histogram is also available at the set level.<br>
+          For example:
+          `asinfo -v "hist-dump:ns=<NAMESPACE>;set=<SET>;hist=objsz"`
+    examples:
+      - title: "Object size histogram with default obj-size-hist-max=100 (all records of size 12.5KB in this example)"
+        sample: |
+          asinfo -v 'hist-dump:ns=test;hist=objsz'
+          test:objsz=100,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,679707;
+      - title: "Object size histogram with obj-size-hist-max=1000 for namespace test, set testset (all records of size 12.5KB in this example)"
+        sample: |
+          asinfo -v 'hist-dump:ns=test;set=testset;hist=objsz'
+          test:objsz=100,10,0,0,0,0,0,0,0,0,0,0,679707,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
+      - title: "Time to live histogram"
+        sample: |
+          asinfo -v 'hist-dump:ns=test;hist=ttl'
+          test:ttl=100,25245,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, \
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1657;
+
+
+  - name       : "hist-track-start"
+    since      : "3.9"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Start or Restart histogram tracking.
+    command    : |
+      hist-track-start:[back=BACK;slice=SLICE;thresholds=THRESHOLDS;hist=HIST]
+    parameters :
+      - name: "hist"
+        description: |
+          Histogram name - if none is provided, command applies to all namespace tracked histograms, which are the read, write, udf and query histograms'.<br>
+          [Default: all namespace tracked histograms]<br>
+          Options (`ns` being the namespace name):
+          * **{ns}-read**
+          * **{ns}-write**
+          * **{ns}-udf**
+          * **{ns}-query**<br>
+          To know more about histograms, see [Monitoring latencies](/docs/operations/monitor/latency/).
+          {{#note}}
+          Note that the histograms naming convention has changed in server version 3.9 and above. For details on version prior to 3.9, see [Monitoring latencies pre-3.9](/docs/operations/monitor/latency/pre3_9/latency_pre3_9.html).
+          {{/note}}
+      - name: "back"
+        description: |
+          Total time span in seconds over which to cache data.<br>
+          [Default: aerospike.conf value if defined, otherwise mandatory]
+      - name: "slice"
+        description: |
+          Period in seconds at which to cache histogram data.<br>
+          [Default: aerospike.conf value if defined, otherwise 10]
+      - name: "thresholds"
+        description: |
+          Comma-separated bucket (ms) values to track, must be powers of 2.
+          <br>
+          eg. 1,4,16,64<br>
+          [Default: aerospike.conf value if defined, otherwise 1,8,64]
+    output     :
+      description: |
+        On success returns "ok", use `get-config` to confirm settings. To
+        persist settings update aerospike.conf.
+    examples   :
+      - title: "Configure reads histogram"
+        description: |
+          Store 12 hours of data in 30 seconds slices for thresholds 1,4,16,64 ms.
+        sample: |
+          asinfo -v 'hist-track-start:hist={ns}-read;back=43200;slice=30;thresholds=1,4,16,64;'
+          ok
+      - title: "Configure all histograms"
+        description: |
+          Store 12 hours of data with default slices for thresholds 1,4,16,64 ms.
+        sample: |
+          asinfo -v 'hist-track-start:hist={ns}-read;back=43200;thresholds=1,2,4,8,16,32;'
+          ok
+    related:
+      - name: "hist-track-stop"
+      - name: "latency"
+      - name: "throughput"
+
+
+  - name       : "hist-track-stop"
+    since      : "3.9"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Stop histogram tracking.
+    command    : |
+      hist-track-stop:[hist=HIST]
+    parameters :
+      - name: "hist"
+        description: |
+          Histogram name - if none is provided, command applies to all namespace tracked histograms, which are the read, write, udf and query histograms'.<br>
+          [Default: all namespace tracked histograms]<br>
+          Options (`ns` being the namespace name):
+          * **{ns}-read**
+          * **{ns}-write**
+          * **{ns}-udf**
+          * **{ns}-query**<br>
+          To know more about histograms, see [Monitoring latencies](/docs/operations/monitor/latency/).
+          {{#note}}
+          Note that the histograms naming convention has changed in server version 3.9 and above. For details on version prior to 3.9, see [Monitoring latencies pre-3.9](/docs/operations/monitor/latency/pre3_9/latency_pre3_9.html).
+          {{/note}}
+    output     :
+      description: |
+        On success returns "ok", use `get-config` to confirm settings. To persist
+        settings update aerospike.conf.
+    examples   :
+      - title: "Stop UDF histogram collection"
+        sample: |
+          asinfo -v 'hist-track-stop:hist={ns}-udf'
+          ok
+      - title: "Stop all histogram collection"
+        sample: |
+          asinfo -v 'hist-track-stop:'
+          ok
+    related:
+      - name: "hist-track-start"
+      - name: "latency"
+      - name: "throughput"
+
+
+  - name       : "jobs"
+    since      : "3.3.0"
+    permission : "data-admin"
+    dnd        : false
+    issues     : |
+      * requires a trailing ':' to recognize the command.
+    purpose    : "Command and Control for queries and scans."
+    command: |
+      jobs:
+      jobs:module=MODULE
+      jobs:module=MODULE;cmd=COMMAND;trid=TRANSACTIONID
+      jobs:module=MODULE;cmd=COMMAND;trid=TRANSACTIONID;value=VALUE
+    parameters:
+      - name: "cmd"
+        description: |
+          Action to execute against a particular transaction. Requires data-admin or
+          sys-admin privileges for security enabled clusters.<br>
+          Options:
+          * **get-job**
+          * **kill-job**
+          * **set-priority**
+      - name: "module"
+        description: |
+          Name of the module to query statistics or execute a command on.<br>
+          Options:
+          * **scan**
+          * **query**
+          * ** sindex-builder**
+      - name: "trid"
+        description: |
+          Unique Identification number for a scan or query transaction. Use
+          either "jobs:" or "jobs:module=MODULE" forms to find Transaction IDs.
+      - name: "value"
+        description: |
+          Value to provide to the command.
+    output:
+      - title: "Module Scan"
+        description:
+      - title: "Command Executions"
+        description: |
+          As of this documentation commands do not acknowledge success, but will
+          acknowledge failure.
+      - title: "Job Status Responses"
+        description: |
+          * **active(ok)** – In Progress
+          * **done(ok)** – Completed with no error
+          * **done(user-aborted)** – Scan aborted by user
+          * **done(abandoned-unknown)** – Scan aborted with unknown failure
+          * **done(abandoned-cluster-key)** – Scan aborted due to cluster key change
+          * **done(abandoned-response-error)** – Scan aborted due to response error
+          * **done(abandoned-response-timeout)** – Scan aborted due to timeout
+    examples:
+      - title: "Query All Job Stats"
+        sample: |
+          asinfo -v "jobs:" -l
+          module=scan:trid=1225169085971291877:job-type=basic:ns=test:priority=1:status=done(abandoned-\
+          response-error):job-progress=12.38:run-time=1003:time-since-done=120794:recs-read=73362:net-i\
+          o-bytes=11864041:socket-timeout=30000:from=98.76.543.21+2005
+          module=scan:trid=6741947622470254455:job-type=basic:ns=test:set=MySetName1:priority=1:status=\
+          done(ok):job-progress=100.00:run-time=192:time-since-done=154105:recs-read=17251:net-io-bytes\
+          =2253844:socket-timeout=30000:from=98.76.543.21+2005
+          module=scan:trid=6106310598564268407:job-type=basic:ns=test:set=MySetName1:priority=1:status=\
+          done(ok):job-progress=100.00:run-time=149:time-since-done=302042:recs-read=3431:net-io-bytes=\
+          456324:socket-timeout=10000:from=98.76.543.21+2005
+          module=sindex-builder:trid=3:job-type=sindex-build:ns=test:set=MySetName1:priority=2:status=d\
+          one(ok):job-progress=100.00:run-time=185:time-since-done=463265:recs-read=6555:net-io-bytes=0\
+          :socket-timeout=0:sindex-name=IdxName3
+          module=sindex-builder:trid=2:job-type=sindex-build:ns=test:set=MySetName1:priority=2:status=d\
+          one(ok):job-progress=100.00:run-time=153:time-since-done=502038:recs-read=6555:net-io-bytes=0\
+          :socket-timeout=0:sindex-name=IdxName2
+          module=sindex-builder:trid=1:job-type=sindex-build:ns=test:set=MySetName1:priority=2:status=d\
+          one(ok):job-progress=100.00:run-time=213:time-since-done=530942:recs-read=6555:net-io-bytes=0\
+          :socket-timeout=0:sindex-name=IdxName1
+      - title: "Request All Scan Stats"
+        sample: |
+          asinfo -v 'jobs:module=scan' -l
+          module=scan:trid=1225169085971291877:job-type=basic:ns=test:priority=1:status=done(abandoned-\
+          response-error):job-progress=12.38:run-time=1003:time-since-done=120794:recs-read=73362:net-i\
+          o-bytes=11864041:socket-timeout=30000:from=98.76.543.21+2005
+          module=scan:trid=6741947622470254455:job-type=basic:ns=test:set=MySetName1:priority=1:status=\
+          done(ok):job-progress=100.00:run-time=192:time-since-done=154105:recs-read=17251:net-io-bytes\
+          =2253844:socket-timeout=30000:from=98.76.543.21+2005
+          module=scan:trid=6106310598564268407:job-type=basic:ns=test:set=MySetName1:priority=1:status=\
+          done(ok):job-progress=100.00:run-time=149:time-since-done=302042:recs-read=3431:net-io-bytes=\
+          456324:socket-timeout=10000:from=98.76.543.21+2005
+    related:
+      - name: "statistics"
+
+
+  - name       : "latency"
+    since      : "3.9"
+    dnd        : false
+    purpose    : |
+      Returns latency and throughput information. Prints `error-no-data-yet-or-back-too-small` if latency data is unavailable.
+    issues     : |
+      * requires a trailing ':' to recognize the command
+    command    : |
+      latency:[hist=HISTOGRAM;][back=BACK;][duration=DURATION;][slice=SLICE]
+    parameters :
+      - name: "hist"
+        description: |
+          Histogram name - if none is provided, command applies to all namespace tracked histograms, which are the read, write, udf and query histograms'.<br>
+          [Default: all namespace tracked histograms]<br>
+          Options (`ns` being the namespace name):
+          * **{ns}-read**
+          * **{ns}-write**
+          * **{ns}-udf**
+          * **{ns}-query**<br>
+          To know more about histograms, see [Monitoring latencies](/docs/operations/monitor/latency/).
+          {{#note}}
+          Note that the histograms naming convention has changed in server version 3.9 and above. For details on version prior to 3.9, see [Monitoring latencies pre-3.9](/docs/operations/monitor/latency/pre3_9/latency_pre3_9.html).
+          {{/note}}
+      - name: "back"
+        description: |
+          Start search this many seconds before now.<br>
+          [Default: Minimum to get last slice.]<br>
+          Note: Using back=0 will query starting from oldest cache.
+      - name: "duration"
+        description: |
+          seconds (forward) from start to search.<br>
+          [Default: 0, everything to present]
+      - name: "slice"
+        description: |
+          Intervals (in seconds) to analyze.<br>
+          [Default: 0, everything as one slice]
+    output     :
+      description: |
+        Return value is in the following format:
+        `HISTOGRAM_0:TIME_START,ops/sec,THRESHHOLD_0,THRESHHOLD_1,...;HISTOGRAM_1:...`
+    examples   :
+      - title: "Show All Latency Histograms"
+        description: |
+          In the example below, read transactions averaged a throughput of 5234.4 per second
+          for the 10 seconds between 23:53:38 and 23:53:48 (52,344 total transactions).<BR>
+          During those 10 seconds, 0.54% of the transactions took over 1ms, and 0.02% took over 8ms, less than 0.005% took over 64ms
+          (0.00% when rounded). Similarly, there were 3,547 write transactions, with 2.34% of those
+          taking over 1ms, and 0.77% over 8ms.
+        sample: |
+          asinfo -v latency: -l
+          {ns}-read:23:53:38-GMT,ops/sec,>1ms,>8ms,>64ms
+          23:53:48,5234.4,0.54,0.02,0.00
+          {ns}-write:23:53:38-GMT,ops/sec,>1ms,>8ms,>64ms
+          23:53:48,354.7,2.34,0.77,0.00
+          error-no-data-yet-or-back-too-small
+          error-no-data-yet-or-back-too-small
+      - title: "Show Read Latency Histogram"
+        description: |
+          Return read latency in 30 second slices, starting 300 seconds back for
+          a duration of 120 second.
+        description: |
+          In the example below, there are not read transactions taking place during the time
+          interval.
+        sample: |
+          asinfo -v 'latency:hist={ns}-read;slice=30;back=300;duration:120'
+          {ns}-read:23:50:28-GMT,ops/sec,>1ms,>8ms,>64ms;23:50:58,0.0,0.00,0.00,0.00;
+          23:51:28,0.0,0.00,0.00,0.00;23:51:58,0.0,0.00,0.00,0.00;23:52:28,0.0,0.00,0.00,0.00;
+          23:52:58,0.0,0.00,0.00,0.00;23:53:28,0.0,0.00,0.00,0.00;23:53:58,0.0,0.00,0.00,0.00;
+          23:54:28,0.0,0.00,0.00,0.00;23:54:58,0.0,0.00,0.00,0.00
+    related:
+      - name: "hist-track-start"
+      - name: "hist-track-stop"
+      - name: "throughput"
+
+
+  - name       : "log"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns a list of logging contexts and their associated verbosity levels.
+    command    : |
+      log/<SINK_ID>
+      log/<SINK_ID>/<CONTEXT>
+    parameters :
+      - name: "SINK_ID"
+        description: |
+          Identifier for the logging a logging component. In normal cases the
+          standard log file will be ID 0.
+      - name: "CONTEXT"
+        description: |
+          (Optional) Which logging context to query the verbosity.
+    output      :
+      - title: "If a CONTEXT is not provided"
+        description: |
+          Returns Semicolon ';' delimited list of CONTEXT:VERBOSITY
+      - title: "If a CONTEXT is provided"
+        description: |
+          Returns requested CONTEXT:VERBOSITY
+    examples     :
+      - name: "Query Verbosity Level of Fabric"
+        sample: |
+          asinfo -v 'log/0/fabric'
+          fabric:INFO
+    related:
+      - name: "logs"
+      - name: "log-set"
+
+
+  - name       : "logs"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns a list of log file locations in use by this server.
+    command    : "logs"
+    output     :
+      description: |
+        List of log "Sink IDs" and their associated output location
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'logs'
+          0:/var/log/aerospike/aerospike.log
+    related:
+      - name: "log"
+      - name: "log-set"
+
+
+  - name       : "mcast"
+    since      : "3.3.0"
+    dnd        : false
+    issues     : |
+      * conditionally defined..
+    purpose    : |
+      Returns the multicast heartbeat address and port used by this server.
+      Only available in multicast heartbeat mode.
+    command    : "mcast"
+    output     :
+      description: |
+        MULTICAST_IP:MULTICAST_PORT
+        for the target Aerospike Server.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'mcast'
+          239.1.98.29:9918
+    related:
+      - name: "dun"
+      - name: "undun"
+      - name: "mesh"
+
+
+  - name       : "mesh"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns the heartbeat address and port used by this server.
+      Only available in mesh heartbeat mode.
+    command    : "mesh"
+    output     :
+      description: |
+        HOST_IP:MESH_PORT
+        for the target Aerospike Server.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'mesh'
+          172.16.121.138:3002
+    related:
+      - name: "mcast"
+      - name: "tip"
+      - name: "tip-clear"
+
+
+  - name       : "namespace"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns health and usage stats for a particular namespace.
+    command    : |
+      namespace/<NAMESPACE>
+    parameters :
+      - name: "NAMESPACE"
+        description: |
+          The namespace name to query for associated [`configuration parameters`](/docs/reference/configuration/index.html)
+          and [`statistics`](/docs/reference/metrics/index.html).<br>
+          Some direct links for a couple of such entries: [`replication-factor`](/docs/reference/configuration/#replication-factor),
+          [`memory-size`](/docs/reference/configuration/#memory-size), [`objects`](/docs/reference/metrics/#objects),
+          [`master_objects`](/docs/reference/metrics/#master_objects).
+    examples   :
+      - title: "Server version 4.5.1 and above"
+        sample: |
+          asinfo -v 'namespace/test' -l
+          ns_cluster_size=2
+          effective_replication_factor=2
+          objects=0
+          tombstones=0
+          master_objects=0
+          master_tombstones=0
+          prole_objects=0
+          prole_tombstones=0
+          non_replica_objects=0
+          non_replica_tombstones=0
+          dead_partitions=0
+          unavailable_partitions=0
+          clock_skew_stop_writes=false
+          stop_writes=false
+          hwm_breached=false
+          current_time=289021877
+          non_expirable_objects=0
+          expired_objects=0
+          evicted_objects=0
+          evict_ttl=-7369076
+          evict_void_time=289018038
+          smd_evict_void_time=281648962
+          nsup_cycle_duration=0
+          truncate_lut=288557588797
+          truncated_records=0
+          memory_used_bytes=166912
+          memory_used_data_bytes=0
+          memory_used_index_bytes=0
+          memory_used_sindex_bytes=166912
+          memory_free_pct=99
+          xmem_id=1
+          available_bin_names=32744
+          device_total_bytes=8589934592
+          device_used_bytes=0
+          device_free_pct=100
+          device_available_pct=99
+          device_compression_ratio=1.000
+          storage-engine.file[0].used_bytes=0
+          storage-engine.file[0].free_wblocks=32704
+          storage-engine.file[0].write_q=0
+          storage-engine.file[0].writes=0
+          storage-engine.file[0].defrag_q=0
+          storage-engine.file[0].defrag_reads=0
+          storage-engine.file[0].defrag_writes=0
+          storage-engine.file[0].shadow_write_q=0
+          storage-engine.file[0].age=-1
+          storage-engine.file[1].used_bytes=0
+          storage-engine.file[1].free_wblocks=32704
+          storage-engine.file[1].write_q=0
+          storage-engine.file[1].writes=0
+          storage-engine.file[1].defrag_q=0
+          storage-engine.file[1].defrag_reads=0
+          storage-engine.file[1].defrag_writes=0
+          storage-engine.file[1].shadow_write_q=0
+          storage-engine.file[1].age=-1
+          pending_quiesce=false
+          effective_is_quiesced=false
+          nodes_quiesced=0
+          effective_prefer_uniform_balance=false
+          migrate_tx_partitions_imbalance=0
+          migrate_tx_instances=0
+          migrate_rx_instances=0
+          migrate_tx_partitions_active=0
+          migrate_rx_partitions_active=0
+          migrate_tx_partitions_initial=4096
+          migrate_tx_partitions_remaining=0
+          migrate_tx_partitions_lead_remaining=0
+          migrate_rx_partitions_initial=0
+          migrate_rx_partitions_remaining=0
+          migrate_records_skipped=0
+          migrate_records_transmitted=0
+          migrate_record_retransmits=0
+          migrate_record_receives=0
+          migrate_signals_active=0
+          migrate_signals_remaining=0
+          appeals_tx_active=0
+          appeals_rx_active=0
+          appeals_tx_remaining=0
+          appeals_records_exonerated=0
+          client_tsvc_error=0
+          client_tsvc_timeout=0
+          client_proxy_complete=0
+          client_proxy_error=0
+          client_proxy_timeout=0
+          client_read_success=0
+          client_read_error=0
+          client_read_timeout=0
+          client_read_not_found=0
+          client_write_success=0
+          client_write_error=0
+          client_write_timeout=0
+          xdr_client_write_success=0
+          xdr_client_write_error=0
+          xdr_client_write_timeout=0
+          client_delete_success=0
+          client_delete_error=0
+          client_delete_timeout=0
+          client_delete_not_found=0
+          xdr_client_delete_success=0
+          xdr_client_delete_error=0
+          xdr_client_delete_timeout=0
+          xdr_client_delete_not_found=0
+          client_udf_complete=0
+          client_udf_error=0
+          client_udf_timeout=0
+          client_lang_read_success=0
+          client_lang_write_success=0
+          client_lang_delete_success=0
+          client_lang_error=0
+          from_proxy_tsvc_error=0
+          from_proxy_tsvc_timeout=0
+          from_proxy_read_success=0
+          from_proxy_read_error=0
+          from_proxy_read_timeout=0
+          from_proxy_read_not_found=0
+          from_proxy_write_success=0
+          from_proxy_write_error=0
+          from_proxy_write_timeout=0
+          xdr_from_proxy_write_success=0
+          xdr_from_proxy_write_error=0
+          xdr_from_proxy_write_timeout=0
+          from_proxy_delete_success=0
+          from_proxy_delete_error=0
+          from_proxy_delete_timeout=0
+          from_proxy_delete_not_found=0
+          xdr_from_proxy_delete_success=0
+          xdr_from_proxy_delete_error=0
+          xdr_from_proxy_delete_timeout=0
+          xdr_from_proxy_delete_not_found=0
+          from_proxy_udf_complete=0
+          from_proxy_udf_error=0
+          from_proxy_udf_timeout=0
+          from_proxy_lang_read_success=0
+          from_proxy_lang_write_success=0
+          from_proxy_lang_delete_success=0
+          from_proxy_lang_error=0
+          batch_sub_tsvc_error=0
+          batch_sub_tsvc_timeout=0
+          batch_sub_proxy_complete=0
+          batch_sub_proxy_error=0
+          batch_sub_proxy_timeout=0
+          batch_sub_read_success=0
+          batch_sub_read_error=0
+          batch_sub_read_timeout=0
+          batch_sub_read_not_found=0
+          from_proxy_batch_sub_tsvc_error=0
+          from_proxy_batch_sub_tsvc_timeout=0
+          from_proxy_batch_sub_read_success=0
+          from_proxy_batch_sub_read_error=0
+          from_proxy_batch_sub_read_timeout=0
+          from_proxy_batch_sub_read_not_found=0
+          udf_sub_tsvc_error=0
+          udf_sub_tsvc_timeout=0
+          udf_sub_udf_complete=0
+          udf_sub_udf_error=0
+          udf_sub_udf_timeout=0
+          udf_sub_lang_read_success=0
+          udf_sub_lang_write_success=0
+          udf_sub_lang_delete_success=0
+          udf_sub_lang_error=0
+          retransmit_all_read_dup_res=0
+          retransmit_all_write_dup_res=0
+          retransmit_all_write_repl_write=0
+          retransmit_all_delete_dup_res=0
+          retransmit_all_delete_repl_write=0
+          retransmit_all_udf_dup_res=0
+          retransmit_all_udf_repl_write=0
+          retransmit_all_batch_sub_dup_res=0
+          retransmit_udf_sub_dup_res=0
+          retransmit_udf_sub_repl_write=0
+          scan_basic_complete=0
+          scan_basic_error=0
+          scan_basic_abort=0
+          scan_aggr_complete=0
+          scan_aggr_error=0
+          scan_aggr_abort=0
+          scan_udf_bg_complete=0
+          scan_udf_bg_error=0
+          scan_udf_bg_abort=0
+          query_reqs=0
+          query_fail=0
+          query_short_queue_full=0
+          query_long_queue_full=0
+          query_short_reqs=0
+          query_long_reqs=0
+          query_agg=0
+          query_agg_success=0
+          query_agg_error=0
+          query_agg_abort=0
+          query_agg_avg_rec_count=0
+          query_lookups=0
+          query_lookup_success=0
+          query_lookup_error=0
+          query_lookup_abort=0
+          query_lookup_avg_rec_count=0
+          query_udf_bg_success=0
+          query_udf_bg_failure=0
+          geo_region_query_reqs=0
+          geo_region_query_cells=0
+          geo_region_query_points=0
+          geo_region_query_falsepos=0
+          re_repl_success=0
+          re_repl_error=0
+          re_repl_timeout=0
+          fail_xdr_forbidden=0
+          fail_key_busy=0
+          fail_generation=0
+          fail_record_too_big=0
+          deleted_last_bin=0
+          replication-factor=2
+          memory-size=1073741824
+          default-ttl=86400
+          enable-xdr=false
+          sets-enable-xdr=true
+          ns-forward-xdr-writes=false
+          allow-nonxdr-writes=true
+          allow-xdr-writes=true
+          {test}-read-hist-track-back=300
+          {test}-read-hist-track-slice=10
+          {test}-read-hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          {test}-query-hist-track-back=300
+          {test}-query-hist-track-slice=10
+          {test}-query-hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          {test}-udf-hist-track-back=300
+          {test}-udf-hist-track-slice=10
+          {test}-udf-hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          {test}-write-hist-track-back=300
+          {test}-write-hist-track-slice=10
+          {test}-write-hist-track-thresholds=1,2,4,8,16,32,64,128,256,512
+          conflict-resolution-policy=generation
+          data-in-index=false
+          disable-cold-start-eviction=false
+          disable-write-dup-res=false
+          disallow-null-setname=false
+          enable-benchmarks-batch-sub=false
+          enable-benchmarks-read=false
+          enable-benchmarks-udf=false
+          enable-benchmarks-udf-sub=false
+          enable-benchmarks-write=false
+          enable-hist-proxy=false
+          evict-hist-buckets=10000
+          evict-tenths-pct=5
+          high-water-disk-pct=50
+          high-water-memory-pct=60
+          index-stage-size=1073741824
+          index-type=shmem
+          migrate-order=5
+          migrate-retransmit-ms=5000
+          migrate-sleep=1
+          nsup-hist-period=3600
+          nsup-period=120
+          nsup-threads=1
+          partition-tree-sprigs=256
+          prefer-uniform-balance=false
+          rack-id=0
+          read-consistency-level-override=off
+          single-bin=false
+          stop-writes-pct=90
+          strong-consistency=false
+          strong-consistency-allow-expunge=false
+          tomb-raider-eligible-age=86400
+          tomb-raider-period=86400
+          transaction-pending-limit=20
+          write-commit-level-override=off
+          storage-engine=device
+          storage-engine.file[0]=/opt/aerospike/test0.dat
+          storage-engine.file[1]=/opt/aerospike/test2.dat
+          storage-engine.filesize=4294967296
+          storage-engine.scheduler-mode=null
+          storage-engine.write-block-size=131072
+          storage-engine.data-in-memory=true
+          storage-engine.cold-start-empty=true
+          storage-engine.commit-to-device=false
+          storage-engine.commit-min-size=0
+          storage-engine.compression=zstd
+          storage-engine.compression-level=0
+          storage-engine.defrag-lwm-pct=50
+          storage-engine.defrag-queue-min=0
+          storage-engine.defrag-sleep=1000
+          storage-engine.defrag-startup-minimum=10
+          storage-engine.direct-files=false
+          storage-engine.enable-benchmarks-storage=false
+          storage-engine.encryption-key-file=null
+          storage-engine.flush-max-ms=1000
+          storage-engine.max-write-cache=67108864
+          storage-engine.min-avail-pct=5
+          storage-engine.post-write-queue=0
+          storage-engine.read-page-cache=false
+          storage-engine.serialize-tomb-raider=false
+          storage-engine.tomb-raider-sleep=1000
+          sindex.num-partitions=32
+          geo2dsphere-within.strict=true
+          geo2dsphere-within.min-level=1
+          geo2dsphere-within.max-level=30
+          geo2dsphere-within.max-cells=12
+          geo2dsphere-within.level-mod=1
+          geo2dsphere-within.earth-radius-meters=6371000
+    related:
+      - name: "bins"
+      - name: "namespaces"
+      - name: "set-config"
+      - name: "sets"
+
+
+  - name       : "namespaces"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns a list namespaces defined on this server.
+    command    : "namespaces"
+    output     :
+      description: |
+        Semicolon ';' delimited list of namespace names defined on this server
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'namespaces'
+          test;bar
+    related:
+      - name: "bins"
+      - name: "namespace"
+      - name: "sets"
+
+
+  - name       : "node"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Node ID. Unique 15 character hex string for each node based on the mac
+      address and port.
+    command    : "node"
+    output     :
+      description: |
+        Returns the Node ID for this server.
+    examples    :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'node'
+          BB9C5014A290C00
+    related:
+      - name: "dun"
+      - name: "undun"
+
+
+  - name       : "racks"
+    ee-only    : true
+    since      : "3.13.0"
+    dnd        : false
+    purpose    : |
+      Enterprise only feature as of version 4.0.<br><br>
+      Returns the rack grouping of nodes for each namespace.
+    command    : "racks:"
+    parameters :
+      - name: "namespace"
+        description: |
+          Name of the namespace to query rack grouping for.
+    output     :
+      description: |
+        For each namespace, list the number of unique racks, each followed by the node_ids in the rack.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'racks:'
+          ns=test:rack_1=BCD10DFA9290C00,BB910DFA9290C00:rack_2=BD710DFA9290C00,BC310DFA9290C00
+
+
+  - name       : "cluster-stable"
+    since      : "4.3"
+    dnd        : false
+    purpose    : |
+      The command is used to check if a nodes cluster-state has stabilized. A user will typically run this command across all nodes in the cluster to check
+      if all nodes have converged to the same cluster state by checking that none of the nodes return an error and that they all return the same [`cluster_key`](/docs/reference/metrics/#cluster_key).
+    command    : "cluster-stable:size=<target-cluster-size>;ignore-migrations=<yes/no>;namespace=<namespace-name>"
+    parameters :
+      - name: "size"
+        description: |
+          Target size of the cluster to check the cluster-state for.
+      - name: "ignore-migrations"
+        description: |
+          If migration state needs to be ignored when checking for cluster stability. Valid values are `yes` or `no`. Default is `no` 
+          which will not ignore migrations.
+      - name: "namespace"
+        description: |
+          Name of the namespace to check the cluster-state for. Not specifying the namespace will check across all namespaces.
+    output     :
+      description: |
+        Returns the current 'cluster_key' when the following are satisfied:
+          * If 'size' is specified then the target node's 'cluster-size' must match size.
+          * If 'ignore-migrations' is either unspecified or 'false' then the target node's migrations counts must be zero for the provided 'namespace' or all namespaces if 'namespace' is not provided.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          Admin> asinfo -v "cluster-stable:ignore-migrations=true;size=3;namespace=test"
+          10.0.100.xxx:3000 returned:
+          7A54B93FDB52
+          10.0.100.yyy:3000 returned:
+          7A54B93FDB52
+          10.0.100.zzz:3000 returned:
+          7A54B93FDB52
+
+
+  - name       : "recluster"
+    since      : "3.14.1.1"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Force the cluster to advance the cluster key and rebalance. Will be processed by the acting principal node and ignored 
+      by other nodes. It is safe and recommended to simply issue the command to all the nodes in the cluster through asadm. 
+      <br><br>
+      By using this command, certain configurations can now take effect without needing a node restart.<br>
+      This is for example used when setting roster in strong consistency mode or applying rack-aware changes.<br>
+      - When issued to a cluster with no pending migrations that hasn't had any configurations changed, this command should not generate new migrations.<br>
+      - When issued to a cluster with no pending migrations that has its rack-id dynamically changed, this command would generate new migrations.<br>
+      - When issued to a cluster with ongoing migrations:<br>
+      -- Active migrations will cancel - this is useful when wanting to quickly lower the `migrate-threads` configuration.<br>
+      -- New initial migrations should not be exceeding the last observed pending migrations.<br>
+      {{#note}}
+      There are known cases where the command is expected to fail. Contact Aerospike Support for details.
+      {{/note}}
+      {{#note}}
+      The rack-aware feature is an Aerospike Enterprise Edition Server only feature as of version 4.0.
+      {{/note}}
+    command    : "recluster:"
+    output     :
+      description: |
+        On success returns OK.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          Admin> asinfo -v 'recluster:'
+          192.168.100.233:3000 (192.168.100.233) returned:
+          ok
+          192.168.100.215:3000 (192.168.100.215) returned:
+          ignored-by-non-principal
+
+
+  - name       : "revive"
+    ee-only    : true
+    permission : "sys-admin"
+    since      : "4.0"
+    dnd        : false
+    purpose    : |
+      Used to revive dead partitions in a namespace running in strong consistency mode.
+      Should be followed by the recluster command in order to take effect.
+    command    : "revive:namespace=<NAMESPACE>"
+    output     :
+      description: |
+        On success returns OK.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          Admin> asinfo -v 'revive:namespace=test'
+          192.168.100.233:3000 (192.168.100.233) returned:
+          ok
+          192.168.100.215:3000 (192.168.100.215) returned:
+          ok
+    related:
+      - name: "recluster"
+
+
+  - name       : "roster"
+    ee-only    : true
+    since      : "4.0"
+    dnd        : false
+    purpose    : |
+      Show roster information (for namespaces running in strong consistency mode).
+    command    : "roster:namespace=<NAMESPACE>"
+    output     :
+      description: |
+        Returns the list of node currently in the roster.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          Admin> asinfo -v "roster:namespace=test"
+          node1.aerospike.com:3000 (192.168.10.10) returned:
+          roster=null:pending_roster=null:observed_nodes=BB9070016AE4202,BB9060016AE4202,BB9050016AE4202,BB9040016AE4202,BB9020016AE4202
+
+          node2.aerospike.com:3000 (192.168.10.11) returned:
+          roster=null:pending_roster=null:observed_nodes=BB9070016AE4202,BB9060016AE4202,BB9050016AE4202,BB9040016AE4202,BB9020016AE4202
+
+          node3.aerospike.com:3000 (192.168.10.12) returned:
+          roster=null:pending_roster=null:observed_nodes=BB9070016AE4202,BB9060016AE4202,BB9050016AE4202,BB9040016AE4202,BB9020016AE4202
+
+          node4.aerospike.com:3000 (192.168.10.13) returned:
+          roster=null:pending_roster=null:observed_nodes=BB9070016AE4202,BB9060016AE4202,BB9050016AE4202,BB9040016AE4202,BB9020016AE4202
+
+          node5.aerospike.com:3000 (192.168.10.14) returned:
+          roster=null:pending_roster=null:observed_nodes=BB9070016AE4202,BB9060016AE4202,BB9050016AE4202,BB9040016AE4202,BB9020016AE4202
+
+          node6.aerospike.com:3000 (192.168.10.15) returned:
+          roster=null:pending_roster=null:observed_nodes=BB9070016AE4202,BB9060016AE4202,BB9050016AE4202,BB9040016AE4202,BB9020016AE4202
+    related:
+      - name: "roster-set"
+
+  - name       : "roster-set"
+    ee-only    : true
+    since      : "4.0"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Set the roster (for namespaces running in strong consistency mode). Requires 'recluster' to take effect.<br><br>
+      For removing a node from the roster, follow the [Removing Nodes](/docs/operations/manage/consistency/index.html#removing-nodes)
+      paragraph of the [Manage Consistency](/docs/operations/manage/consistency/index.html) documentation page.
+    command    : "roster-set:namespace=<NAMESPACE>;nodes=<observed nodes list>"
+    output     :
+      description: |
+        Set the roster for the namespace. It is safe to issue this command multiple times, once for each observed node,
+        or create a list, but issuing it for against one node is enough (will be propagated through smd). 
+        The roster is not active until the recluster command is issued. Validate the roster prior to
+        issuing the recluster command by running the roster command and verifying all desired roster nodes are in the
+        pending_roster list. 
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          Admin> asinfo -v "roster-set:namespace=test:nodes=BB9070016AE4202,BB9060016AE4202,BB9050016AE4202,
+            BB9040016AE4202,BB9020016AE4202" with BB9020016AE4202
+          node1.aerospike.com:3000 (192.168.10.10) returned:
+          ok
+
+          node2.aerospike.com:3000 (192.168.10.11) returned:
+          ok
+
+          node3.aerospike.com:3000 (192.168.10.12) returned:
+          ok
+
+          node4.aerospike.com:3000 (192.168.10.13) returned:
+          ok
+
+          node5.aerospike.com:3000 (192.168.10.14) returned:
+          ok
+
+          node6.aerospike.com:3000 (192.168.10.15) returned:
+          ok
+    related:
+      - name: "roster"
+      - name: "recluster"
+
+
+  - name       : "protect-roster-set"
+    ee-only    : true
+    since      : "4.3.1.4"
+    removed    : "4.5.2"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      This command is to be used in very specific situations to protect from network partition events after a 
+      [`roster-set`](/docs/reference/info/#roster-set) command removing node(s) from a roster. 
+      Certain specific roster changes followed by network partitions prior to migrations completing could lead 
+      to inconsistencies. The `protect-roster-set` command helps those very specific situations.
+      The command has to be issued prior to the [`roster-set`](/docs/reference/info/#roster-set) command and should 
+      be issued against all the nodes in the roster to be. It is important to make sure there are no 
+      network partition events between the `protect-roster-set` command and the subsequent 
+      [`recluster`](https://www.aerospike.com/docs/reference/info/#recluster) 
+      command.<br><br>
+      The typical situation requiring this command consist of a rack-aware setup with 2 racks, one rack 
+      having 1 more node than the other one. 
+      Such topology helps handle a network partition between the 2 racks as follows:<br>
+      * The majority rack (if still reachable) would be fully available.<br>
+      * The minority rack would not be available, but a re-roster of the cluster to this minority rack 
+      would provide full availability. To protect against 
+      network partitions within this rack during migrations, the user of the `protect-roster-set` command 
+      provides protection from inconsistencies 
+      by making the partitions that have not re-replicated become unavailable.<br>
+
+      {{#note}}
+      To show where the protect-roster-set command may be useful, consider the following scenario:<br>
+      <br>
+      A partition X resides in a 7 node cluster which has replication factor 2.  Node A is the roster master 
+      and node B is the roster replica.  Due to a network partition the cluster splits into a 2 sub-clusters 
+      of 2 and 5 nodes, node B resides in the 2 node sub-cluster.<br>
+      <br>
+      Partition X remains available in the larger sub-cluster as that has the majority 
+      and the roster master (node A).  Partition X is not available in the smaller sub-cluster.  
+      Migrations are ongoing to maintain the 2 copies mandated by the replication factor of 2.  
+      During migrations, the [```roster-set```](/docs/reference/info/index.html#roster-set) command 
+      is used to exclude node B and the other missing node from the roster in the majority sub-cluster.<br>
+      <br>
+      At this point the sub-cluster has node A as the roster master with a full copy of partition X 
+      and node C as the roster replica with a partial copy of partition X.  If node A leaves the 
+      sub-cluster before migrations finish, the resultant situation would be that the cluster 
+      could be left with only a partial copy of partition X. Partition X would be still be available, 
+      despite not being a full copy of the partition, as the roster replica is present in the 
+      majority sub-cluster.  This very specific circumstance could lead to inconsistent data being 
+      left available within the cluster.<br>
+      <br>
+      The protect-roster-set command prevents this by making partitions available until they are fully replicated.<br>
+      <br>
+      The protect-roster-set command is only necessary when the 
+      [```roster-set```](/docs/reference/info/index.html#roster-set) has been used to change the roster to exclude 
+      a node or nodes without waiting for migrations to complete.  It is not necessary in any other circumstance.
+      {{/note}}
+      {{#note}}
+      Version 4.5.2  will implicitly protect the roster in such situations and will remove the protect-roster-set command.
+      {{/note}}
+
+      <br>For removing a node from the roster, follow the [Removing Nodes](/docs/operations/manage/consistency/index.html#removing-nodes)
+      paragraph of the [Manage Consistency](/docs/operations/manage/consistency/index.html) documentation page. 
+    command    : "protect-roster-set:namespace=<NAMESPACE>"
+    output     :
+      description: |
+        The command has to be issued against all the nodes in the roster to be. If namespace is omitted, 
+        will be affecting all namespaces.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          Admin> asinfo -v "protect-roster-set:"
+          node1.aerospike.com:3000 (192.168.10.10) returned:
+          ok
+
+          node2.aerospike.com:3000 (192.168.10.11) returned:
+          ok
+
+          node3.aerospike.com:3000 (192.168.10.12) returned:
+          ok
+
+          node4.aerospike.com:3000 (192.168.10.13) returned:
+          ok
+
+          node5.aerospike.com:3000 (192.168.10.14) returned:
+          ok
+
+          node6.aerospike.com:3000 (192.168.10.15) returned:
+          ok
+    related:
+      - name: "roster"
+      - name: "roster-set"
+      - name: "recluster"
+
+
+  - name       : "service"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      IP address and server port for this node, expected to be a single
+      address/port per node, may be multiple address if this node is configured
+      to listen on multiple interfaces (typically not advised).
+    command    : "service"
+    output     :
+      description: |
+        Returns a list of IP:SERVICE_PORT to be advertised to other cluster
+        nodes. Typically considered a configuration issue if the list contains
+        more than one IP.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'service'
+          172.16.121.138:3000
+    related:
+      - name: "services"
+      - name: "services-alternate"
+      - name: "services-alumni"
+      - name: "services-alumni-reset"
+
+
+  - name       : "service-clear-std"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "service" info command. The address and port for this node's non-TLS client service.
+    command    : "service-clear-std"
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'service-clear-std'
+          172.17.0.3:3000
+    related:
+      - name: "peers-clear-alt"
+      - name: "peers-clear-std"
+      - name: "peers-tls-alt"
+      - name: "peers-tls-std"
+      - name: "service-clear-alt"
+      - name: "service-tls-alt"
+      - name: "service-tls-std"
+
+
+  - name       : "service-clear-alt"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "service" info command. The alternate address and port for this node's non-TLS client service.
+    command    : "service-clear-alt"
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "service-clear-alt"
+          74.125.239.52:3000
+    related:
+      - name: "peers-clear-alt"
+      - name: "peers-clear-std"
+      - name: "peers-tls-alt"
+      - name: "peers-tls-std"
+      - name: "service-clear-std"
+      - name: "service-tls-alt"
+      - name: "service-tls-std"
+
+      
+  - name       : "service-tls-alt"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "service" info command. The alternate address and port for this node's TLS client service.
+    command    : "service-tls-alt"
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "service-tls-alt"
+          74.125.239.52:4333
+    related:
+      - name: "peers-clear-alt"
+      - name: "peers-clear-std"
+      - name: "peers-tls-alt"
+      - name: "peers-tls-std"
+      - name: "service-clear-alt"
+      - name: "service-clear-std"
+      - name: "service-tls-std"
+
+
+  - name       : "service-tls-std"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "service" info command. The address and port for this node's TLS client service.
+    command    : "service-tls-std"
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "service-tls-std"
+          172.17.0.3:4333
+    related:
+      - name: "peers-clear-alt"
+      - name: "peers-clear-std"
+      - name: "peers-tls-alt"
+      - name: "peers-tls-std"
+      - name: "service-clear-alt"
+      - name: "service-clear-std"
+      - name: "service-tls-alt"
+
+
+  - name       : "services"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      List of addresses of neighbor cluster nodes to advertise for Application
+      to connect.
+    command    : "services"
+    output     :
+      description: |
+        Returns a list of neighboring IP:SERVICE_PORT that are considered
+        Alive by this server.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'services'
+          192.168.120.145:3000;192.168.120.144:3000;192.168.120.143:3000
+    related:
+      - name: "service"
+      - name: "services-alternate"
+      - name: "services-alumni"
+      - name: "services-alumni-reset"
+
+
+  - name       : "services-alternate"
+    since      : "3.7.1"
+    dnd        : false
+    purpose    : |
+      List of alternate service addresses of peer nodes.
+    command    : "services-alternate"
+    output     :
+      description: |
+        Returns a list of alternate neighboring IP:SERVICE_PORT that are considered
+        alive by this server and configured as alternate-access-address in the service stanza.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'services-alternate'
+          192.168.120.145:3000;192.168.120.144:3000;192.168.120.143:3000;192.168.120.142:3000
+    related:
+      - name: "service"
+      - name: "services"
+      - name: "services-alumni"
+      - name: "services-alumni-reset"
+
+
+  - name       : "peers-clear-std"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "services" for non-TLS, standard addresses. List of addresses of neighbor cluster nodes to advertise for Application
+      to connect.
+    command    : "peers-clear-std"
+    output     :
+      description: |
+        Returns peers-generation, port, list of [ NodeIDs/Names, TLSName(if defined), [ List of endpoints/IPaddresses ]]  
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "peers-clear-std"
+          9,3000,[[BB9040011AC4202,,[172.17.0.4]],[BB9050011AC4202,,[172.17.0.5]]]
+    related:
+      - name: "peers-clear-alt"
+      - name: "peers-tls-alt"
+      - name: "peers-tls-std"
+      - name: "service-clear-alt"
+      - name: "service-clear-std"
+      - name: "service-tls-alt"
+      - name: "service-tls-std"
+
+
+  - name       : "peers-clear-alt"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "services-alternate" for non-TLS, alternate addresses. List of alternate service addresses of peer nodes.
+    command    : "peers-clear-alt"
+    output     :
+      description: |
+        Returns peers-generation, port, list of [ NodeIDs/Names, TLSName(if defined), [ List of endpoints/IPaddresses ]]  
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "peers-clear-alt"
+          9,3000,[[BB9060011AC4202,,[74.125.239.53]],[BB9070011AC4202,,[74.125.239.54]]]
+    related:
+      - name: "peers-clear-std"
+      - name: "peers-tls-alt"
+      - name: "peers-tls-std"
+      - name: "service-clear-alt"
+      - name: "service-clear-std"
+      - name: "service-tls-alt"
+      - name: "service-tls-std"
+
+
+  - name       : "peers-tls-std"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "services" for TLS, standard addresses. List of addresses of neighbor cluster nodes to advertise for Application
+      to connect.
+    command    : "peers-tls-std"
+    output     :
+      description: |
+        Returns peers-generation, port, list of [ NodeIDs/Names, TLSName(if defined), [ List of endpoints/IPaddresses ]]  
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "peers-tls-std"
+          9,4333,[[BB9040011AC4202,clusternode,[172.17.0.4]],[BB9050011AC4202,clusternode,[172.17.0.5]]]
+    related:
+      - name: "peers-clear-alt"
+      - name: "peers-clear-std"
+      - name: "peers-tls-alt"
+      - name: "service-clear-alt"
+      - name: "service-clear-std"
+      - name: "service-tls-alt"
+      - name: "service-tls-std"
+
+
+  - name       : "peers-tls-alt"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "services-alternate" for TLS, alternate addresses. List of alternate service addresses of peer nodes.
+    command    : "peers-tls-alt"
+    output     :
+      description: |
+        Returns peers-generation, port, list of [ NodeIDs/Names, TLSName(if defined), [ List of endpoints/IPaddresses ]]  
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "peers-tls-alt"
+          9,4333,[[BB9060011AC4202,clusternode,[74.125.239.53]],[BB9070011AC4202,clusternode,[74.125.239.54]]]
+    related:
+      - name: "peers-clear-alt"
+      - name: "peers-clear-std"
+      - name: "peers-tls-std"
+      - name: "service-clear-alt"
+      - name: "service-clear-std"
+      - name: "service-tls-alt"
+      - name: "service-tls-std"
+
+
+  - name       : "services-alumni"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      All neighbor addresses (services) this server has ever known about. Some
+      diagnostic tools, eg. asadm, use alumni to enable full cluster view
+      even during cluster disruptions.
+    command    : "services-alumni"
+    output     :
+      description: |
+        Returns a list of all neighboring IP:SERVICE_PORT this node has ever
+        known, including neighbor nodes this server believes to be Dead.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'services-alumni'
+          192.168.120.145:3000;192.168.120.144:3000;192.168.120.143:3000;192.168.120.142:3000
+    related:
+      - name: "service"
+      - name: "services"
+      - name: "services-alternate"
+      - name: "services-alumni-reset"
+
+
+  - name       : "services-alumni-reset"
+    since      : "3.6.2"
+    dnd        : false
+    purpose    : |
+      Resets the neighbor addresses (services) the server should know about. Some
+      diagnostic tools, eg. asadm, use alumni to enable full cluster view
+      even during cluster disruptions. This command will be useful if the alumni's list includes servers
+      which have been decommissioned.
+    command    : "services-alumni-reset"
+    output     :
+      description: |
+        Returns OK after the refresh is completed.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v 'services-alumni-reset'
+          Ok
+    related:
+      - name: "service"
+      - name: "services"
+      - name: "services-alumni"
+
+
+  - name       : "alumni-clear-std"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "services-alumni" for non-TLS service. All neighbor addresses (peers-clear-std) this server has ever known about. Some
+      diagnostic tools, eg. asadm, use alumni to enable full cluster view
+      even during cluster disruptions.
+    command    : "alumni-clear-std"
+    output     :
+      description: |
+        Returns peers-generation, port, list of [ NodeIDs/Names, TLSName(if defined), [ List of endpoints/IPaddresses ]]  
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "alumni-clear-std"
+          10,3000,[[BB9050011AC4202,,[172.17.0.5]]]
+    related:
+      - name: "alumni-tls-std"
+      - name: "peers-clear-std"
+      - name: "peers-tls-std"
+      - name: "service-alumni-reset"
+
+  
+  - name       : "alumni-tls-std"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Supersedes "services-alumni" for TLS service. All neighbor addresses (peers-tls-std) this server has ever known about. Some
+      diagnostic tools, eg. asadm, use alumni to enable full cluster view
+      even during cluster disruptions.
+    command    : "alumni-tls-std"
+    output     :
+      description: |
+        Returns peers-generation, port, list of [ NodeIDs/Names, TLSName(if defined), [ List of endpoints/IPaddresses ]]  
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "alumni-tls-std"
+          10,4333,[[BB9050011AC4202,clusternode,[172.17.0.5]]]
+    related:
+      - name: "alumni-clear-std"
+      - name: "peers-clear-std"
+      - name: "peers-tls-std"
+      - name: "service-alumni-reset"
+
+  
+  - name       : "peers-generation"
+    since      : "3.11"
+    dnd        : false
+    purpose    : |
+      Returns the generation count of the services lists (peers-clear-std, peers-tls-std). Each node in the cluster will maintain a generation count of its services list. This value gets incremented for every change in its services list (e.g. node addition/removal).
+    command    : "peers-generation"  
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          asinfo -v "peers-generation"
+          10
+    related:
+      - name: "peers-clear-std"
+      - name: "peers-tls-std"
+
+
+  - name       : "set-config"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Set a configuration parameter at run time, configuration parameter must be
+      dynamic.
+    command    : |
+      set-config:context=<CONTEXT>;<PARAM=VALUE>
+      set-config:context=namespace;id=<NAMESPACE>;<PARAM=VALUE>
+    parameters :
+      - name: "context"
+        description: |
+          Configuration context of where the parameter resides in the
+          configuration file.<br>
+          Options:
+          * **namespace**
+          * **network**
+          * **service**
+          * **xdr**
+          For versions prior to 3.9.1, the network context actually can also have a subcontext: network.heartbeat.
+      - name: "id"
+        description: |
+          Used for namespace contexts only. The name of the namespace where the
+          configuration parameter resides.
+    output:
+      description: |
+        Upon success command return "ok"
+    examples:
+      - title: "Set <code>defrag-queue-priority</code> to 1 for service stanza"
+        sample: |
+          asinfo -v 'set-config:context=service;defrag-queue-priority=1'
+          ok
+      - title: "Set <code>defrag-interval</code> to 1 for namespace test"
+        sample: |
+          asinfo -v 'set-config:context=namespace;id=test;defrag-period=1'
+          ok
+      - title: "Set <code>heartbeat.timeout</code> to 10 for network context (for versions 3.9.1 and higher)"
+        sample: |
+          asinfo -v 'set-config:context=network;heartbeat.timeout=10'
+          ok
+      - title: "Set heartbeat <code>timeout</code> to 10 for network context (for versions prior to 3.9)"
+        sample: |
+          asinfo -v 'set-config:context=network.heartbeat;timeout=10'
+          ok
+    related:
+      - name: "get-config"
+      - name: "namespace"
+
+
+  - name       : "log-set"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Sets verbosity for logging contexts. `set-log` is a synonym.
+    command    : |
+      log-set:id=<SINK_ID>;<CONTEXT>=<VERBOSITY>
+    parameters :
+      - name: "SINK_ID"
+        description: |
+          The log identifier to make a verbosity change on. See `logs` for a
+          list of SINK_IDs.
+      - name: "CONTEXT"
+        description: |
+          The logging context to make a verbosity change on. See `log` for a
+          list of CONTEXTs.
+      - name: "VERBOSITY"
+        description: |
+          The verbosity level to make the selected context.<br>
+          Options:
+          * **critical**
+          * **warning**
+          * **info**
+          * **debug**
+          * **detail**
+    output     :
+      description: |
+        Returns 'ok' on success. To config change see `log`.
+    examples   :
+      - name: "Set verbosity of fabric context to debug"
+        sample: |
+          asinfo -v 'log-set:id=0;fabric=debug'
+          ok
+    related:
+      - name: "log"
+      - name: "logs"
+
+
+  - name       : "sets"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns set statistics for all or a particular set.
+      As of Aerospike version 3.6.1, this also includes in-memory size of a set (if data-in-memory).
+    command    : |
+      sets
+      sets/NAMESPACE
+      sets/NAMESPACE/SET
+    parameters :
+      - name: "NAMESPACE"
+        description: |
+          Namespace name to query set statistics from.
+      - name: "SET"
+        description: |
+          Set name to query set statistics from.
+    output:
+       - name: "Stats"
+         description: |
+           * **ns - namespace name**
+           * **set - set name**
+           * **objects - master and prole objects count.**
+           * **tombstones - master and prole tombstones count.**
+           * **memory_data_bytes - memory used by data (master and proles), excluding primary index.**
+           * **truncate_lut - The lut (last updated time) in milliseconds since the Citrusleaf epoch (00:00:00 UTC on 1 Jan 2010).**
+           * **stop-writes-count - value configured in **[set-stop-writes-count.](reference/configuration#set-stop-writes-count)
+           * **set-enable-xdr - value configured in **[set-enable-xdr.](reference/configuration#set-enable-xdr)
+           * **disable-eviction - value configured in **[set-disable-eviction.](reference/configuration#set-disable-eviction)
+    examples   :
+      - title: "Query set stats from all namespaces"
+        sample: |
+          asinfo -v 'sets' -l
+          ns=test:set=demo:objects=12345:tombstones=0:memory_data_bytes=851805:truncate_lut=0:stop-writes-count=0:set-enable-xdr=use-default:disable-eviction=false
+          ns=bar:set=demo:objects=1:tombstones=0:memory_data_bytes=34:truncate_lut=0:stop-writes-count=0:set-enable-xdr=use-default:disable-eviction=false
+          ns=bar:set=demo2:objects=123456:tombstones=0:memory_data_bytes=8518464:truncate_lut=0:stop-writes-count=0:set-enable-xdr=use-default:disable-eviction=false
+      - title: "Query set stats from namespace 'test'"
+        sample: |
+          asinfo -v 'sets/bar' -l
+          ns=bar:set=demo:objects=1:tombstones=0:memory_data_bytes=34:truncate_lut=0:stop-writes-count=0:set-enable-xdr=use-default:disable-eviction=false
+          ns=bar:set=demo2:objects=123456:tombstones=0:memory_data_bytes=8518464:truncate_lut=0:stop-writes-count=0:set-enable-xdr=use-default:disable-eviction=false
+      - title: "Query set stats from 'demo' set in namespace 'bar'"
+        sample: |
+          asinfo -v 'sets/bar/demo'
+          objects=1:tombstones=0:memory_data_bytes=34:truncate_lut=0:stop-writes-count=0:set-enable-xdr=use-default:disable-eviction=false;
+      - title: "Deleting objects from set 'demo' in namespace 'bar'"
+        description: |
+          For more information on deleting sets in a namespace, go to [Managing Sets](/docs/operations/manage/sets)
+        sample: |
+          asinfo -v 'truncate:namespace=bar;set=demo;'
+          ok
+      - title: "Disabling evictions for a set 'demo' in a namespace 'bar'"
+        description: |
+          For more information on disabling evictions from sets in a namespace, go to [Managing Sets](/docs/operations/manage/sets)
+        sample: |
+          asinfo -v 'set-config:context=namespace;id=bar;set=demo;set-disable-eviction=true;'
+          ok
+    related:
+      - name: "bins"
+      - name: "namespace"
+      - name: "namespaces"
+      - name: "statistics"
+
+
+  - name       : "sindex"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns a list of secondary indexes defined on Aerospike and their state.
+    command    : |
+      sindex[/NAMESPACE[/SINDEX]]
+    parameters :
+      - name: "NAMESPACE"
+        description: |
+          Name of the namespace to query for secondary indexes.
+      - name: "SINDEX"
+        description: |
+          Name of the secondary index to query statistics from.
+    output     :
+      - title: "Secondary Index List"
+        description: |
+          Semicolon ';' delimited list of colon ':' delimited general statistics
+          for Secondary Indexes.
+      - title: "Secondary Index Statistics"
+        description: |
+          Semicolon ';' delimited list of detailed statistics for a particular
+          Secondary Index.
+    examples   :
+      - title: "Query All Secondary Indexes"
+        sample : |
+          asinfo -v 'sindex'
+          ns=phobos_sindex:set=longevity:indexname=str_100_idx:num_bins=1:bins=str_100_bin:type=TEXT:sync_state=synced:state=RW; \
+          ns=phobos_sindex:set=longevity:indexname=str_uniq_idx:num_bins=1:bins=str_uniq_bin:type=TEXT:sync_state=synced:state=RW; \
+          ns=phobos_sindex:set=longevity:indexname=int_uniq_idx:num_bins=1:bins=int_uniq_bin:type=INT SIGNED:sync_state=synced:state=RW;
+      - title: "Query All Secondary Indexes for a Namespace"
+        sample: |
+          asinfo -v 'sindex/phobos_sindex'
+          ns=phobos_sindex:set=longevity:indexname=str_100_idx:num_bins=1:bins=str_100_bin:type=TEXT:sync_state=synced:state=RW; \
+          ns=phobos_sindex:set=longevity:indexname=str_uniq_idx:num_bins=1:bins=str_uniq_bin:type=TEXT:sync_state=synced:state=RW; \
+          ns=phobos_sindex:set=longevity:indexname=int_uniq_idx:num_bins=1:bins=int_uniq_bin:type=INT SIGNED:sync_state=synced:state=RW;
+      - title: "Query Statistics for a Particular Secondary Index"
+        sample: |
+          asinfo -v 'sindex/phobos_sindex/str_100_idx'
+          keys=58743268;entries=58743268;ibtr_memory_used=2847777760;nbtr_memory_used=1821041308;si_accounted_memory=4668819068; \
+          load_pct=100;loadtime=0;stat_write_reqs=462802373;stat_write_success=462802373;stat_write_errs=0;stat_delete_reqs=306554517; \
+          stat_delete_success=306554517;stat_delete_errs=0;stat_gc_recs=12489653;stat_gc_time=36475718;query_reqs=21281009; \
+          query_avg_rec_count=0;query_avg_record_size=0;query_agg=0;query_agg_avg_rec_count=0;query_agg_avg_record_size=0; \
+          query_lookups=21281009;query_lookup_avg_rec_count=0;query_lookup_avg_record_size=0;gc-period=1000;gc-max-units=1000; \
+          data-max-memory=18446744073709551615;tracing=0;histogram=false;ignore-not-sync=true
+    related:
+      - name: "sindex-create"
+      - name: "sindex-delete"
+      - name: "sindex-histogram"
+
+
+  - name       : "sindex-create"
+    since      : "3.3.0"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      Create a secondary index.
+    command    : |
+      sindex-create:ns=NAMESPACE;[set=SET];indexname=INDEX_NAME;indexdata=BIN_NAME,BIN_TYPE
+#      sindex-create:ns=NAMESPACE;[set=SET];indexname=INDEX_NAME;type=INDEX_TYPE;indexdata=file,func,FUNC_RETURN_TYPE;nfargs=NUMBER_ARGUMENTS;fargs=ARGUMENT_NAMES
+    parameters :
+      - name: "ns"
+        description: |
+          Name of the Namespace to create a Secondary Index on.
+      - name: "set"
+        description: |
+          (Optional) Name of a Set in the provided Namespace to create a
+          Secondary Index on.
+      - name: "indexname"
+        description: |
+          Canonical name for the newly created Secondary Index. <br>Name should be 20 characters or less. <br>Colon ':' or semicolon ';' not allowed in index name.
+      # - name: "type"
+      #   description: |
+      #     Type of Secondary Index to create.<br>
+      #     Options:
+      #     * **functional**
+      #     * **userland**
+      # - name: "nfargs"
+      #   description: |
+      #     TODO
+      # - name: "fargs"
+      #   description: |
+      #     TODO
+      - name: "indexdata"
+        description: |
+          Tuple of the form `BIN_NAME,BIN_TYPE`.<br>
+          **BIN_NAME** is the name of the bin to create a Secondary Index on<br>
+          **BIN_TYPE** is the Bin type for the provided BIN_NAME. A BIN_TYPE
+          may be **numeric** or **string**<br>
+    output     :
+      description: |
+        On success returns "ok", otherwise returns an error message.
+        On failure returns an error message.
+    examples   :
+      - title: "Create a Secondary Index"
+        description: |
+          Creating a secondary index called "demo-index" of type "string" on
+          bin "bin" in set "demo" of namespace "test"
+        sample : |
+          asinfo -v 'sindex-create:ns=test;set=demo;indexname=demo-index;indexdata=bin,string'
+          ok
+    related:
+      - name: "sindex"
+      - name: "sindex-delete"
+      - name: "sindex-histogram"
+
+
+  - name       : "sindex-delete"
+    since      : "3.3.0"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      Delete a secondary index.
+    command    : |
+      sindex-delete:ns=NAMESPACE[;set=SET];indexname=INDEX_NAME
+    parameters :
+      - name: "ns"
+        description: |
+          Namespace name where the target Secondary Index resides.
+      - name: "set"
+        description: |
+          (optional) Name of the Set where the target Secondary Index resides.
+      - name: "indexname"
+        description: |
+          Name of the Secondary Index to delete.
+    output     :
+      description: |
+        On success returns "ok", otherwise returns an error message.
+    examples   :
+      - title: "Delete a Secondary Index"
+        sample : |
+          asinfo -v 'sindex-delete:ns=test;indexname=demo-index'
+          ok
+    related:
+      - name: "sindex"
+      - name: "sindex-create"
+      - name: "sindex-histogram"
+
+
+  - name       : "sindex-histogram"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Enables query histograms to be printed in system logs of the target server
+    command    : |
+      sindex-histogram:ns=NAMESPACE;[set=SET];indexname=INDEX;enable=ENABLE
+    parameters :
+      - name: "ns"
+        description: |
+          Namespace name where the target Secondary Index resides.
+      - name: "set"
+        description: |
+          (optional) Name of the Set where the target Secondary Index resides.
+      - name: "indexname"
+        description: |
+          Name of the index to enable/disable histograms for.
+      - name: "enable"
+        description: |
+          Can be either `true` or `false`.<br>
+          If `true` histograms will be enabled for the provided index name.<br>
+          If `false` histograms will be disabled for the provided index name.
+    output     :
+      description: |
+        On success returns "ok", otherwise returns an error message.
+    examples   :
+      - title: "Enable Query Histograms to be Printed to the Logs"
+        sample : |
+          asinfo -v 'sindex-histogram:ns=test;set=demo;indexname=demo-index;enable=true'
+          ok
+      - title: "Disable Query Histograms to be Printed to the Logs"
+        sample: |
+          asinfo -v 'sindex-histogram:ns=test;set=demo;indexname=demo-index;enable=false'
+          ok
+    related:
+      - name: "sindex"
+      - name: "sindex-create"
+      - name: "sindex-delete"
+
+
+  - name       : "statistics"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Returns system health and usage stats for this server. Adding /xdr will return the xdr statistics subset for version 3.8 and above.
+      Use option -l for pretty print.
+    command    : |
+      statistics
+      statistics/xdr
+    output     :
+      description: |
+        A semicolon ";" delimited list of system health and usage statistics
+        of form "METRIC:VALUE". Use of -l option will break up statistics on individual lines.
+    examples   :
+      - title: "Version 4.5.1 and above"
+        sample: |
+          asinfo -v 'statistics' -l
+          cluster_size=2
+          cluster_key=35F970F8B3AE
+          cluster_generation=2
+          cluster_principal=BB9DB3754005452
+          cluster_integrity=true
+          cluster_is_member=true
+          cluster_duplicate_nodes=null
+          cluster_clock_skew_stop_writes_sec=56
+          cluster_clock_skew_ms=0
+          cluster_clock_skew_outliers=null
+          uptime=5556
+          system_free_mem_pct=71
+          heap_allocated_kbytes=169569
+          heap_active_kbytes=171304
+          heap_mapped_kbytes=314368
+          heap_efficiency_pct=54
+          heap_site_count=41
+          objects=0
+          tombstones=0
+          tsvc_queue=0
+          info_queue=0
+          rw_in_progress=0
+          proxy_in_progress=0
+          tree_gc_queue=0
+          client_connections=1
+          heartbeat_connections=0
+          fabric_connections=24
+          heartbeat_received_self=11105
+          heartbeat_received_foreign=11094
+          reaped_fds=0
+          info_complete=284
+          demarshal_error=0
+          early_tsvc_client_error=0
+          early_tsvc_from_proxy_error=0
+          early_tsvc_batch_sub_error=0
+          early_tsvc_from_proxy_batch_sub_error=0
+          early_tsvc_udf_sub_error=0
+          batch_index_initiate=0
+          batch_index_queue=0:0,0:0
+          batch_index_complete=0
+          batch_index_error=0
+          batch_index_timeout=0
+          batch_index_delay=0
+          batch_index_unused_buffers=0
+          batch_index_huge_buffers=0
+          batch_index_created_buffers=0
+          batch_index_destroyed_buffers=0
+          scans_active=0
+          query_short_running=0
+          query_long_running=0
+          sindex_ucgarbage_found=0
+          sindex_gc_retries=0
+          sindex_gc_list_creation_time=220
+          sindex_gc_list_deletion_time=0
+          sindex_gc_objects_validated=0
+          sindex_gc_garbage_found=0
+          sindex_gc_garbage_cleaned=0
+          paxos_principal=BB9DB3754005452
+          time_since_rebalance=5493
+          migrate_allowed=true
+          migrate_partitions_remaining=0
+          fabric_bulk_send_rate=0
+          fabric_bulk_recv_rate=0
+          fabric_ctrl_send_rate=0
+          fabric_ctrl_recv_rate=0
+          fabric_meta_send_rate=298
+          fabric_meta_recv_rate=298
+          fabric_rw_send_rate=0
+          fabric_rw_recv_rate=0
+          dlog_used_objects=34
+          dlog_free_pct=100
+          dlog_logged=25434
+          dlog_relogged=0
+          dlog_processed_main=25434
+          dlog_processed_replica=24955
+          dlog_processed_link_down=0
+          dlog_overwritten_error=0
+          xdr_ship_success=0
+          xdr_ship_delete_success=0
+          xdr_ship_source_error=0
+          xdr_ship_destination_error=0
+          xdr_ship_destination_permanent_error=0
+          xdr_ship_fullrecord=0
+          xdr_ship_bytes=0
+          xdr_ship_inflight_objects=0
+          xdr_ship_outstanding_objects=0
+          xdr_ship_latency_avg=0
+          xdr_ship_compression_avg_pct=0.00
+          xdr_read_success=0
+          xdr_read_error=0
+          xdr_read_notfound=398
+          xdr_read_latency_avg=0
+          xdr_read_active_avg_pct=0.00
+          xdr_read_idle_avg_pct=100.00
+          xdr_read_reqq_used=0
+          xdr_read_respq_used=0
+          xdr_read_reqq_used_pct=0.00
+          xdr_read_txnq_used=0
+          xdr_read_txnq_used_pct=0.00
+          xdr_relogged_incoming=0
+          xdr_relogged_outgoing=0
+          xdr_queue_overflow_error=0
+          xdr_active_failed_node_sessions=0
+          xdr_active_link_down_sessions=0
+          xdr_hotkey_fetch=142
+          xdr_hotkey_skip=25178
+          xdr_unknown_namespace_error=0
+          xdr_timelag=0
+          xdr_throughput=0
+          xdr_global_lastshiptime=1551322036831
+    related:
+      - name: "bins"
+      - name: "namespace"
+      - name: "sets"
+
+
+  - name       : "status"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Always returns ok, used to verify service port is open.
+      Useful when using telnet. In asinfo simply leave off the value '-v'
+      argument.
+    command    : "status"
+    output     :
+      description: |
+        If server is up, will always return 'ok'
+
+
+  - name       : "thread-traces"
+    since      : "4.5.3"
+    dnd        : false
+    purpose    : |
+      Returns the current call stack for all server threads.
+    command    : "thread-traces"
+    output     :
+      description: |
+        For each server thread, returns its ID (the first number on the dashed line),
+        the offset of its run function (in parentheses on the dashed line),
+        and its current call stack.
+        <br>
+        Note that since there are typically over 100 server threads, this command can generate a large amount of ouput.
+    examples:
+      - title: "Sample output (for one thread only)"
+        sample: |
+          asinfo -v 'thread-traces' -l
+          ---------- 45387 (0x12914f) ----------
+          /usr/bin/asd(cf_thread_traces_action+0x4c) [0x67807c]
+          /lib64/libpthread.so.0() [0x384720f710]
+          /lib64/libc.so.6(nanosleep+0x2d) [0x3846eaca3d]
+          /lib64/libc.so.6(usleep+0x34) [0x3846ee1be4]
+          /usr/bin/asd(hb_adjacency_tender+0x275) [0x5293c4]
+          /usr/bin/asd() [0x678379]
+          /lib64/libpthread.so.0() [0x38472079d1]
+          /lib64/libc.so.6(clone+0x6d) [0x3846ee88fd]
+
+
+  - name       : "throughput"
+    since      : "3.9"
+    dnd        : false
+    purpose    : |
+      Returns throughput info.
+    command    : |
+      throughput:[hist=HISTOGRAM;][back=BACK;][duration=DURATION;][slice=SLICE]
+    parameters :
+      - name: "hist"
+        description: |
+          Histogram name - if none is provided, command applies to all namespace tracked histograms, which are the read, write, udf and query histograms'.<br>
+          [Default: all namespace tracked histograms]<br>
+          Options (`ns` being the namespace name):
+          * **{ns}-read**
+          * **{ns}-write**
+          * **{ns}-udf**
+          * **{ns}-query**<br>
+          To know more about histograms, see [Monitoring latencies](/docs/operations/monitor/latency/).
+          {{#note}}
+          Note that the histograms naming convention has changed in server version 3.9 and above. For details on version prior to 3.9, see [Monitoring latencies pre-3.9](/docs/operations/monitor/latency/pre3_9/latency_pre3_9.html).
+          {{/note}}
+      - name: "back"
+        description: |
+          Start search this many seconds before now.<br>
+          [Default: Minimum to get last slice.]<br>
+          Note: Using back=0 will query starting from oldest cache.
+      - name: "duration"
+        description: |
+          seconds (forward) from start to search.<br>
+          [Default: 0, everything to present]
+      - name: "slice"
+        description: |
+          Intervals (in seconds) to analyze.<br>
+          [Default: 0, everything as one slice]
+    output     :
+      description: |
+        Return value is in the following format:
+        `HISTOGRAM_0:TIME_START,ops/sec,THRESHHOLD_0,THRESHHOLD_1,...;HISTOGRAM_1:...`
+    examples   :
+      - title: "Show All throughput Histograms"
+        sample: |
+          asinfo -v 'throughput:'
+          {ns}-read:23:56:38-GMT,ops/sec;23:56:48,0.0;{ns}-write:23:56:38-GMT,ops/sec;23:56:48,0.0;
+          error-no-data-yet-or-back-too-small;error-no-data-yet-or-back-too-small
+      - title: "Show Read throughput Histogram"
+        description: |
+          Return throughput latency in 30 second slices, starting 300 seconds
+          back for a duration of 120 second.
+        sample: |
+          asinfo -v 'throughput:hist={ns}-read;slice=30;back=300;duration:120'
+          {ns}-read:23:51:28-GMT,ops/sec;23:51:58,0.0;23:52:28,0.0;23:52:58,0.0;
+          23:53:28,0.0;23:53:58,0.0;23:54:28,0.0;23:54:58,0.0;23:55:28,0.0;23:55:58,0.0
+    related:
+      - name: "hist-track-start"
+      - name: "hist-track-stop"
+      - name: "latency"
+
+
+  - name       : "tip"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Add external IP or hostname to mesh-mode heartbeats.
+    command    : |
+      tip:host=HOST;port=MESH-PORT
+    parameters :
+      - name: "host"
+        description: |
+          IP address or hostname of an Aerospike server to join this cluster. Note that server version 3.9.0.3 and prior honor only IP address as the input host.
+      - name: "port"
+        description: |
+          Mesh port of an Aerospike server to join this cluster.
+    output     :
+      description: |
+        As of version 3.15, the command generates descriptive messages on success as well as a failure. For prior versions, this command does not acknowledge success or
+        failure, though on failure message are printed to the target node's log.
+    examples   :
+      title: "Adding a Host to the Cluster"
+      sample: |
+        asinfo -v 'tip:host=172.16.121.138;port=3002'
+        asinfo -h prod_aerospike_1 -v "tip:host=prod_aerospike_2;port=3002"
+    related:
+      - name: "dun"
+      - name: "mesh"
+      - name: "tip-clear"
+      - name: "undun"
+
+
+  - name       : "tip-clear"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Clear IP or hostname tip list from mesh-mode heartbeats. Note that server version 3.9.0.3 and prior honor only IP address as the input host.
+    command    : "tip-clear:host-port-list=Node1:3002,Node2:3002,..."
+    parameters :
+      - name: "host-port-list"
+        description: |
+          IP address or hostname list of Aerospike servers that have been removed from a cluster.
+          This setting will clear the dynamic list of IPs (or hostnames) loaded from mesh-seed-address-port.
+          Useful in the case of repurposing a node from a live cluster.
+          (host-port-list parameter available in Aerospike Version 3.7.0.1 and above).
+          As of version 3.9.1, the parameter host-port-list is always required (even for specifying all).
+          As of version 3.10, when specifying all, both seed nodes and adjacency nodes will be cleared.
+    output     :
+      description: |
+        As of version 3.15, the command generates descriptive messages on success as well as a failure.
+        For prior versions, this command does not acknowledge success or failure, though on failure message may get printed on the server logs.
+    examples   :
+      title: "Clear IP tip list form a Server"
+      sample: |
+        asinfo -v 'tip-clear:host-port-list=all'
+        asinfo -v 'tip-clear:host-port-list=172.17.0.15:3002'
+        asinfo -v 'tip-clear:host-port-list=prod_aerospike_2:3002'
+    related:
+      - name: "dun"
+      - name: "mesh"
+      - name: "tip"
+      - name: "undun"
+
+
+  - name       : "truncate"
+    since      : "3.12"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      {{#warn}}
+      The "set" parameter is required, as the truncate command is only used for truncating sets, for Aerospike Server versions 4.3.1.11 (and higher 4.3.1.X), 4.4.0.11 (and higher 4.4.0.X), 4.5.0.6 (and higher 4.5.0.X) and 4.5.1.5 and higher.
+      To truncate an entire namespace, use the [truncate-namespace](/docs/reference/info/#truncate-namespace) command. For older versions, use with extreme caution, 
+      as a typo in the command may ignore the set parameter and truncate the whole namespace. The [`aql`](/docs/tools/aql/index.html) 
+      TRUNCATE command may also be used and would be safer for versions prior to 4.5.0.5 (and lower 4.5.0.X), 4.4.0.10 (and lower 4.4.0.X), and 4.3.1.10 (and lower 4.3.1.X).
+      {{/warn}}
+      
+      Available in Aerospike version 3.12.0 and above.<br><br>
+      Deletes every record in the given set whose last update time ("lut") is older than the given time. The
+      deletes are durable and preserve record deletions in the Enterprise Edition only.
+      Has to be issued on one node in a cluster. The command is distributed to other nodes via system metadata (SMD).
+      Secondary index entries are also cleaned up as part of a truncate command as of version 3.12.1.<br><br>
+      {{#note}}
+      If using the client APIs to perform the truncate command there is a precision of accuracy to 1 millisecond(ms) resolution.
+      {{/note}}
+    command    : "truncate:namespace=<namespace name>;set=<set name>;lut=<time>"
+    parameters :
+      - name: "namespace"
+        description: |
+          Required - Name of the namespace to be truncated.
+      - name: "set"
+        description: |
+          Optional - Name of the set to be truncated. If not specified, the whole namespace will be truncated,
+          including records not belonging to any sets.<br>
+          <br>
+          The "set" parameter is required, as the truncate command is only used for truncating sets, for Aerospike Server versions 4.3.1.11 (and higher 4.3.1.X), 4.4.0.11 (and higher 4.4.0.X), 4.5.0.6 (and higher 4.5.0.X) and 4.5.1.5 and higher.
+          To truncate an entire namespace in these newer versions, use the truncate-namespace command.
+      - name: "lut"
+        description: |
+          Optional - Last update time. If not specified, the current time is used. The lut time is expressed
+          in nanoseconds (8 bytes) since the UNIX epoch (i.e., nanoseconds since 00:00:00 UTC on 1 Jan 1970). It can be
+          given in hex (with a 0x prefix), decimal, or octal (with a 0 prefix). The lut time is not allowed to
+          be older than the Citrusleaf epoch (00:00:00 UTC on 1 Jan 2010), and is not allowed to be beyond the
+          current time (i.e. in the future). Some older versions allowed specifying "lut=now" to mean the current time, but
+          this is no longer supported as of version 4.3.1.11 (and higher 4.3.1.X), 4.4.0.11 (and higher 4.4.0.X), 4.5.0.6 (and higher 4.5.0.X) and 4.5.1.5 onward.
+    output     :
+      description: |
+        ok
+    examples   :
+      title: "Truncate a namespace or a set"
+      sample: |
+        # version 4.5.0.5 (and lower 4.5.0.X), and 4.4.0.10 (and lower 4.4.0.X)
+        asinfo -v 'truncate:namespace=test;lut=now;'
+        # version 4.5.0.5 (and lower 4.5.0.X), and 4.4.0.10 (and lower 4.4.0.X)
+        asinfo -v 'truncate:namespace=test;set=set1;lut=now;' 
+        # version 4.3.1.11 (and higher 4.3.1.X), 4.4.0.11 (and higher 4.4.0.X), 4.5.0.6 (and higher 4.5.0.X) and 4.5.1.5 and higher
+        asinfo -v 'truncate:namespace=test;set=set1;' 
+    related:
+      - name: "truncate-undo"
+      - name: "truncate-namespace"
+      - name: "truncate-namespace-undo"
+
+
+  - name       : "truncate-undo"
+    since      : "3.12"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      Available in Aerospike version 3.12.0 and above.<br><br>
+      Undo a truncate command by removing the associated SMD (System Meta Data) files entry and allow (some) previously truncated 
+      records to be resurrected on the subsequent cold restart (only for records that have not had their persisted storage block 
+      overwritten by other records).
+    command    : "truncate-undo:namespace=<namespace name>;set=<set name>;"
+    parameters :
+      - name: "namespace"
+        description: |
+          Required - Name of the namespace to run the undo truncate command against. Will only remove namespace level truncate 
+          entry in SMD (which persists - tombstone like - the truncate time) if set is not specified.
+      - name: "set"
+        description: |
+          Optional - Name of the set to run the undo truncate command against. If not specified, only namespace level 
+          truncate entries in the SMD files will be removed and set specific ones (if any) will remain.
+          <br><br>
+          The "set" parameter is required for Aerospike Server versions 4.3.1.11 (and higher 4.3.1.X), 4.4.0.11 (and higher 4.4.0.X), 4.5.0.6 (and higher 4.5.0.X) and 4.5.1.5 and higher.
+    output     :
+      description: |
+        ok
+    examples   :
+      title: "Remove truncate entry in SMD for a namespace or a set"
+      sample: |
+        # version 4.5.0.5 (and lower 4.5.0.X), and 4.4.0.10 (and lower 4.4.0.X)
+        asinfo -v 'truncate-undo:namespace=test;'
+        # version 4.3.1.11 (and higher 4.3.1.X), 4.4.0.11 (and higher 4.4.0.X), 4.5.0.6 (and higher 4.5.0.X) and 4.5.1.5 and higher
+        asinfo -v 'truncate-undo:namespace=test;set=set1;'
+    related:
+      - name: "truncate"
+      - name: "truncate-namespace"
+      - name: "truncate-namespace-undo"
+
+
+  - name       : "truncate-namespace"
+    since      : "4.3.1.11, 4.4.0.11, 4.5.0.6, 4.5.1.5"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      Available in Aerospike Server versions 4.3.1.11 (and higher 4.3.1.X), 4.4.0.11 (and higher 4.4.0.X), 4.5.0.6 (and higher 4.5.0.X) and 4.5.1.5 and higher.<br><br>
+      Deletes every record in the given namespace whose last update time ("lut") is older than the given time. The
+      deletes are durable and preserve record deletions in the Enterprise Edition only.
+      Has to be issued on one node in a cluster. The command is distributed to other nodes via system metadata (SMD).
+      Secondary index entries are also cleaned up as part of a truncate-namespace command.<br><br>
+      {{#note}}
+      If using the client APIs to perform the truncate command there is a precision of accuracy to 1 millisecond(ms) resolution.
+      {{/note}}
+    command    : "truncate-namespace:namespace=<namespace name>;lut=<time>"
+    parameters :
+      - name: "namespace"
+        description: |
+          Required - Name of the namespace to be truncated.
+      - name: "lut"
+        description: |
+          Optional - Last update time. If not specified, the current time is used. The lut time is expressed
+          in nanoseconds (8 bytes) since the UNIX epoch (i.e., nanoseconds since 00:00:00 UTC on 1 Jan 1970). It can be
+          given in hex (with a 0x prefix), decimal, or octal (with a 0 prefix). The lut time is not allowed to
+          be older than the Citrusleaf epoch (00:00:00 UTC on 1 Jan 2010), and is not allowed to be beyond the
+          current time (i.e. in the future).
+    output     :
+      description: |
+        ok
+    examples   :
+      title: "Truncate a namespace"
+      sample: |
+        asinfo -v 'truncate-namespace:namespace=test;'
+    related:
+      - name: "truncate-namespace-undo"
+      - name: "truncate"
+      - name: "truncate-undo"
+
+
+  - name       : "truncate-namespace-undo"
+    since      : "4.3.1.11, 4.4.0.11, 4.5.0.6, 4.5.1.5"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      Available in Aerospike Server versions 4.3.1.11 (and higher 4.3.1.X), 4.4.0.11 (and higher 4.4.0.X), 4.5.0.6 (and higher 4.5.0.X) and 4.5.1.5 and higher.<br><br>
+      Undo a truncate-namespace command by removing the associated SMD (System Meta Data) files entry and allow (some) previously truncated 
+      records to be resurrected on the subsequent cold restart (only for records that have not had their persisted storage block 
+      overwritten by other records).
+    command    : "truncate-namespace-undo:namespace=<namespace name>;"
+    parameters :
+      - name: "namespace"
+        description: |
+          Required - Name of the namespace to run the undo truncate-namespace command against. Will remove namespace level truncate 
+          entry in SMD (which persists - tombstone like - the truncate time).
+    output     :
+      description: |
+        ok
+    examples   :
+      title: "Remove truncate entry in SMD for a namespace"
+      sample: |
+        asinfo -v 'truncate-namespace-undo:namespace=test;'
+    related:
+      - name: "truncate-namespace"
+      - name: "truncate"
+      - name: "truncate-undo"
+
+
+  - name       : "udf-list"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Lists the registered UDF/Lua modules on the node.
+    command    : "udf-list"
+    output     :
+     description: |
+       list of registered UDF modules.
+    examples   :
+      sample: |
+        asinfo -v 'udf-list'
+        filename=basic_udf.lua,hash=706c57cb29e027221560a3cb4b693573ada98bf2,type=LUA;
+    related:
+      - name: "udf-put"
+      - name: "udf-get"
+      - name: "udf-remove"
+
+
+  - name       : "udf-put"
+    since      : "3.3.0"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      Registered UDF/Lua modules on the node.
+    command    : "udf-put"
+    output     :
+     description: |
+       Registers an UDF module on the server. Only need to be executed against one node, and will be propagated
+       to other nodes in the cluster.
+    parameters :
+      - name: "filename"
+        description: |
+          The filename to register the UDF as.
+      - name: "udf-type"
+        description: |
+          Currently can only be the string "lua".
+      - name: "content-len"
+        description: |
+          Number of bytes to expect for the base64 encoded UDF content.
+      - name: "content"
+        description: |
+          content-len number of bytes of base64 encoded UDF data.
+    examples   :
+      sample: |
+        asinfo -v 'udf-put:filename=basic_udf.lua;udf-type=LUA;content-len=761;content=LS0gQSB2ZXJ5I\
+        HNpbXBsZSBhcml0aG1ldGljIFVERiB3aXRoIG5vIGFyZ3VtZW50cyBvciByZXR1cm4gdmFsdWUuCi0tIEl0IGFkZHMgM\
+        TAwMCB0byB0aGUgdmFsdWUgaW4gYmluICd0ZXN0LWJpbi0xJyBhbmQgdXBkYXRlcyBpdC4KZnVuY3Rpb24gdGVzdF9ia\
+        W5fMV9hZGRfMTAwMChyZWMpCglyZWNbJ3Rlc3QtYmluLTEnXSA9IHJlY1sndGVzdC1iaW4tMSddICsgMTAwMAoJYWVyb\
+        3NwaWtlOnVwZGF0ZShyZWMpCmVuZAoKLS0gQSBzaW1wbGUgYXJpdGhtZXRpYyBVREYgdGhhdCBoYXMgYXJndW1lbnRzI\
+        GFuZCBhIHJldHVybiB2YWx1ZS4KLS0gSXQgdXBkYXRlcyB0aGUgdmFsdWUgaW4gdGhlIHNwZWNpZmllZCBiaW4gYWZ0Z\
+        XIgcGVyZm9ybWluZyB0aGUgYXJpdGhtZXRpYwotLSBvcGVyYXRpb24sIGFuZCByZXR1cm5zIHRoZSByZXN1bHRpbmcgY\
+        mluIHZhbHVlLgpmdW5jdGlvbiBiaW5fdHJhbnNmb3JtKHJlYywgYmluX25hbWUsIHgsIHkpCglyZWNbYmluX25hbWVdI\
+        D0gKHJlY1tiaW5fbmFtZV0gKiB4KSArIHkKCWFlcm9zcGlrZTp1cGRhdGUocmVjKQoJcmV0dXJuIHJlY1tiaW5fbmFtZ\
+        V0KZW5kCgo=;
+    related:
+      - name: "udf-list"
+      - name: "udf-get"
+      - name: "udf-remove"
+
+
+  - name       : "udf-get"
+    since      : "3.3.0"
+    dnd        : false
+    purpose    : |
+      Get the content of a registered UDF from the node.
+    command    : "udf-get"
+    parameters :
+      - name: "filename"
+        description: |
+          The filename of the registered UDF to get.
+    output     :
+     description: |
+       Get the content of a registered UDF from the local node. Content will be encoded in base 64.
+    examples   :
+      sample: |
+        asinfo -v 'udf-get:filename=basic_udf.lua'
+        gen=p1/hVfrOkb/mGZovQ8tiHZb5LTY=;type=LUA;content=LS0gQSB2ZXJ5IHNpbXBsZSBhcml0aG1ldGljIFVER\
+        iB3aXRoIG5vIGFyZ3VtZW50cyBvciByZXR1cm4gdmFsdWUuCi0tIEl0IGFkZHMgMTAwMCB0byB0aGUgdmFsdWUgaW4g\
+        YmluICd0ZXN0LWJpbi0xJyBhbmQgdXBkYXRlcyBpdC4KZnVuY3Rpb24gdGVzdF9iaW5fMV9hZGRfMTAwMChyZWMpCgl\
+        yZWNbJ3Rlc3QtYmluLTEnXSA9IHJlY1sndGVzdC1iaW4tMSddICsgMTAwMAoJYWVyb3NwaWtlOnVwZGF0ZShyZWMpCm\
+        VuZAoKLS0gQSBzaW1wbGUgYXJpdGhtZXRpYyBVREYgdGhhdCBoYXMgYXJndW1lbnRzIGFuZCBhIHJldHVybiB2YWx1Z\
+        S4KLS0gSXQgdXBkYXRlcyB0aGUgdmFsdWUgaW4gdGhlIHNwZWNpZmllZCBiaW4gYWZ0ZXIgcGVyZm9ybWluZyB0aGUg\
+        YXJpdGhtZXRpYwotLSBvcGVyYXRpb24sIGFuZCByZXR1cm5zIHRoZSByZXN1bHRpbmcgYmluIHZhbHVlLgpmdW5jdGl\
+        vbiBiaW5fdHJhbnNmb3JtKHJlYywgYmluX25hbWUsIHgsIHkpCglyZWNbYmluX25hbWVdID0gKHJlY1tiaW5fbmFtZV\
+        0gKiB4KSArIHkKCWFlcm9zcGlrZTp1cGRhdGUocmVjKQoJcmV0dXJuIHJlY1tiaW5fbmFtZV0KZW5kCgo=;
+    related:
+      - name: "udf-list"
+      - name: "udf-put"
+      - name: "udf-remove"
+
+
+  - name       : "udf-remove"
+    since      : "3.3.0"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      Unregister a previously registered UDF module.
+
+    command    : "udf-remove"
+    parameters :
+      - name: "filename"
+        description: |
+          The filename of the UDF to remove.
+    examples   :
+      sample: |
+        asinfo -v "udf-remove:filename=basic_udf.lua"
+        ok
+    related:
+      - name: "udf-list"
+      - name: "udf-get"
+      - name: "udf-put"
+
+
+  - name       : "undun"
+    since      : "3.3.0"
+    removed    : "3.9.1"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Instruct this server to not ignore another node.
+    command    : |
+      undun:nodes=<NODE ID>[,NODE ID,...]
+    parameters :
+      - name: "nodes"
+        description: |
+          Comma ',' separated list of Node IDs. See `node` command to retrieve
+          the Node ID for a particular server.
+    examples:
+      - title: "Undun one node"
+        sample: |
+          asinfo -v 'undun:nodes=BB936F106CA0568'
+          ok
+      - title: "Undun multiple nodes"
+        sample: |
+          asinfo -v 'undun:nodes=BB936F106CA0568,BB96CDE06CA0568,BB968DF04CA0568'
+          ok
+    related:
+      - name: "dun"
+      - name: "mcast"
+      - name: "mesh"
+      - name: "node"
+      - name: "tip"
+      - name: "tip-clear"
+
+
+  - name       : "xdr-command"
+    ee-only    : true
+    since      : "3.8.3"
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Issues commands for XDR in version 3.8 and above.
+    command    : |
+      xdr-command:<command>
+    parameters :
+      - name: "skip-outstanding"
+        description: |
+          This command instructs XDR to skip all outstanding records in the digest log. It only skips outstanding records
+          for the main thread (it will not impact potential link down and failed node threads). This is equivalent to the
+          noresume command in the older version of XDR (prior to 3.8).
+      - name: "handle-failednode=true|false"
+        description: |
+          This command is only available as of version 3.9.1. When set to false, it instructs XDR to skip all outstanding records for the failed node
+          thread for the current and potential upcoming occurrences of failed node processing. This command should only be used
+          for rolling restart situations where all the nodes are expected to join the cluster back (if handle-failednode is set to false
+          and a node is permanently removed from the cluster, digestlog space would not be reclaimed). It is strongly recommended to consult with Aerospike Support prior to using this command.
+      - name: "handle-linkdown=true|false"
+        description: |
+          This command is only available as of version 3.9.1. When set to false, it instructs XDR to skip all outstanding records for the linked down
+          thread for the current and potential upcoming occurrences of linked down processing. It is recommended to consult with Aerospike Support prior to using this command.
+      - name: "force-linkdown=true|false;dc=<dc-name>"
+        description: |
+          Available as of version 4.1. When set to true, forces a DC into CLUSTER_DOWN state regardless if the DC is reachable or not.
+          Should be set back to false to get the cluster into CLUSTER_WINDOW_SHIP. The use of this command should be carefully considered.
+          Putting a cluster in CLUSTER_DOWN state for an extended period of time will cause the digest log to potentially overflow (and hit stop writes
+          if configured as such) and will force an extra thread to handle shipping for the window the cluster was in the CLUSTER_DOWN state.
+#      - name: "connect"  # can crash asd if xdr is not turned on, commenting out.
+#        description: |
+#          This command instructs XDR to go through all DCs and triggers connection attempts. This can be useful for
+#          dynamic changes to `dc-node-address-port` as well as `dc-security-config-file`. Do not use if XDR is turned off at the xdr stanza level.
+    examples:
+      - title: "Skip outstanding record in the digest log"
+        sample: |
+          asinfo -v 'xdr-command:skip-outstanding'
+          ok
+          asinfo -v 'xdr-command:handle-failednode=false'
+          ok
+          asinfo -v 'xdr-command:force-linkdown=true;dc=DC1'
+          ok
+
+
+  - name       : "dcs"
+    ee-only    : true
+    dnd        : false
+    purpose    : |
+      Returns the list of datacenters configured in the XDR context. Note that this includes the inactive DC's and empty skeletons too.
+    command    : |
+      dcs
+    examples:
+      - title: "List of configured datacenters in XDR context"
+        sample: |
+          asinfo -v 'dcs'
+          DC2;DC3;DC4;DC5;DC6;DC7
+
+
+################################################################################
+# Will not document
+################################################################################
+  - name       : "alloc-info"
+    since      : "3.3.0"
+    removed    : "3.15.0.2"
+    dnd        : true
+    issues     : |
+      * Not documenting as users are not expected to use
+      * requires a trailing ':' to recognize the command
+    purpose    : |
+      Lookup a memory allocation by program location.
+    usage      : "TODO"
+
+  - name       : "asm"
+    since      : "3.3.0"
+    removed    : "3.15.0.2"
+    dnd        : true
+    issues     : |
+      * Not documenting as users are not expected to use
+      * requires a trailing ':' to recognize the command
+    purpose    : |
+      Control the operation of the ASMalloc library.
+    usage      : |
+      Command Format: "asm:{enable=<opt>;<thresh>=<int>;features=<feat>;stats}"
+
+        where <opt> is one of:  {"true" | "false"},
+        And <thresh> is one of:
+          "block_size" --  Minimum block size in bytes to trigger a mallocation
+                           alerts.
+          "delta_size" --  Minimum size change in bytes between mallocation
+                           alerts per thread.
+          "delta_time" --  Minimum time in seconds between mallocation alerts
+                           per thread.
+        and <int> is the new integer value for the given threshold
+        (-1 means infinite.)
+
+        and <feat> is a hexadecimal value representing a bit vector of ASMalloc
+        features to enable.
+
+        One or more of: {"enable" | <thresh> | "features"} may be supplied.
+
+
+  - name       : "bytes-disk"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Redundant to information already in statistics
+    purpose    : |
+      Number of bytes of disk resources available for this server.
+    usage      : "Redundant to statistics"
+
+
+  - name       : "bytes-memory"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Redundant to information already in statistics
+    purpose    : |
+      Number of bytes of memory resources available for this server.
+    usage      : "Redundant to Statistics"
+
+
+  - name       : "cluster-generation"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because it is not particularly useful to the user,
+      * also why not have this in statistics?
+    purpose    : |
+      Returns cluster generation.
+    usage      : "TODO"
+
+
+  - name       : "digests"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because it is not particularly useful to the user
+    purpose    : |
+      Returns the hashing algorithm used by the server for key hashing.
+    usage      : "TODO"
+
+  - name       : "dump-fabric"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose    : |
+        Print debug information about fabric to the log file.
+    command    : |
+        dump-fabric:[verbose=<true|false>]
+    parameters :
+      - name: "verbose"
+        description: |
+          If verbose is set to true, Aerospike will print additional information
+          to the logs.
+        default-value: "false"
+    output:
+      - description: |
+          Return OK upon receipt
+
+          For verbose=false the server will dump fabric data
+          to the log similar to the following
+
+          ```asciidoc
+          Fabric Dump: 4 nodes known
+            bb936f106ca0568 node is self
+            bb96cde06ca0568 fds 7 live 1 goodwrite 0 goodread 0 q 0
+            bb979df04ca0568 fds 7 live 1 goodwrite 0 goodread 0 q 0
+            bb968df04ca0568 fds 7 live 1 goodwrite 0 goodread 0 q 0
+          ```
+    examples:
+      - title: "With verbose=false"
+        sample: |
+          asinfo -v 'dump-fabric:'
+          ok
+      - title: "With verbose=false (explicit)"
+        sample: |
+          asinfo -v 'dump-fabric:verbose=false'
+          ok
+      - title: "With verbose=true"
+        sample: |
+          asinfo -v 'dump-fabric:verbose=true'
+          ok
+
+  - name       : "dump-migrates"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose: |
+      Print debug information about migration.
+    command: |
+      dump-migrates:
+    output:
+      - description: |
+          Return OK upon receipt
+
+          The server will dump migrate data to the log
+          similar to the following
+          ```asciidoc
+          Migration Info.:
+          ----------------
+          Number of migrations in g_migrate_hash: 0
+          Number of requested migrates waiting in g_migrate_q : 0
+          Number of inbound migrations in g_migrate_recv_control_hash: 0
+          Current migration ID: 4097
+          Current migrate transaction ID: 43037981
+          ```
+    examples:
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'dump-migrates:'
+          ok
+
+
+  - name       : "dump-msgs"
+    since      : "3.3.0"
+    dnd        : true
+    permission : "sys-admin"
+    issues     : |
+      Internal use only, document later
+    purpose: |
+      Print debug information about existing 'msg' objects and
+      queues to the log file.
+    command: |
+      dump-msgs:
+    output:
+      - description: |
+          Return OK upon receipt
+
+          The server will dump message data to the log
+          similar to the following
+          ```asciidoc
+          All currently-existing msg types:
+            |msgq[0]| = 1 ; alloc'd = 1
+            |msgq[1]| = 1 ; alloc'd = 3
+            |msgq[2]| = 6 ; alloc'd = 6
+            |msgq[3]| = 34 ; alloc'd = 34
+            |msgq[4]| = 16 ; alloc'd = 16
+            |msgq[7]| = 17 ; alloc'd = 17
+            |msgq[8]| = 1 ; alloc'd = 1
+            |msgq[11]| = 2 ; alloc'd = 2
+            |msgq[15]| = 2 ; alloc'd = 2
+            Total num. msgs = 82 ; Total num. queued = 80 ; Delta = 2'
+          ```
+    examples:
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'dump-msgs:'
+          ok
+
+  - name       : "dump-paxos"
+    since      : "3.3.0"
+    removed    : "3.14.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose: |
+      Print debug information about Paxos state to the log file.
+    command: |
+      dump-paxos:
+    output:
+      - description: |
+          Return OK upon receipt
+
+          The server will dump Paxos data to the log
+          similar to the following
+          ```asciidoc
+          Paxos Cluster Size: 4 [soft max: 32 ; hard max: 128]
+          Cluster State: Has Integrity
+          SuccessionList[0]: Node bb979df04ca0568 [Principal]
+          SuccessionList[1]: Node bb96cde06ca0568
+          SuccessionList[2]: Node bb968df04ca0568
+          SuccessionList[3]: Node bb936f106ca0568 [Self]
+          ```
+    examples:
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'dump-paxos:'
+          ok
+
+  - name       : "dump-ra"
+    ee-only    : true
+    since      : "3.3.0"
+    removed    : "3.14.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose: |
+      Print debug information about Rack Aware state.
+    command: |
+      dump-ra:[verbose=<true|false>]
+    output:
+      - description: |
+          Return OK upon receipt
+
+          For verbose=false the server will dump Rack Aware data
+          similar to the following
+      - examples:
+          - title: "With verbose=false"
+            sample: |
+              asinfo -v 'dump-ra:'
+              ok
+          - title: "With verbose=false (explicit):"
+            sample: |
+              asinfo -v 'dump-ra:verbose=false'
+              ok
+          - title: "With verbose=true"
+            sample: |
+              asinfo -v 'dump-ra:verbose=true'
+              ok
+
+  - name       : "dump-smd"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose: |
+      Print debug information about System Meta Data (SMD) to
+      the log file.
+    command: |
+      dump-smd:[verbose=<true|false>]
+    output:
+      - description: |
+          Return OK upon receipt
+
+          For verbose=false the server will dump System Meta Data
+          information similar to the following
+          ```asciidoc
+          System Metadata Status:
+          -----------------------
+          thr_id: 0x7ff4f07ff700
+          thr_attr: (nil)
+          state: RUNNING
+          number of modules: 2
+          number of pending messages in queue: 0
+          ```
+    examples:
+      - title: "With verbose=false"
+        sample: |
+          asinfo -v 'dump-smd:'
+          ok
+      - title: "With verbose=false (explicit):"
+        sample: |
+          asinfo -v 'dump-smd:verbose=false'
+          ok
+      - title: "With verbose=true:"
+        sample: |
+          asinfo -v 'dump-smd:verbose=true'
+          ok
+
+  - name       : "dump-wb"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Not going to document, not sure how to use
+      Internal use only, document later
+    purpose: |
+      Print debug information about Write Blocks (WB) to the
+      log file.
+    command: |
+        dump-wb:ns=<NAMESPACE>;dev=<DEVICE ID>;id=<BLOCK ID>
+    parameters:
+      - name: "ns"
+      - name: "dev"
+      - name: "id"
+    output:
+      - description: |
+          Return OK upon receipt
+
+          The server will dump write block data to the log
+          similar to the following
+    examples:
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'dump-wb:ns=test;dev=0;id=1'
+          ok
+
+  - name       : "dump-wb-summary"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+      Not going to document, not sure how to use
+    purpose: |
+      Print summary information about all Write Blocks (WB) on
+      a device to the log file.
+    command: |
+      dump-wb-summary:ns=<NAMESPACE>
+    parameters:
+      - name: "ns"
+    output:
+      - description: |
+          Return OK upon receipt
+
+          The server will dump write block data to the log
+          similar to the following
+
+    examples:
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'dump-wb-summary:ns=test'
+          ok
+
+  - name       : "dump-rw"
+    since      : "3.3.0"
+    removed    : "3.9.1"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose: |
+      Print information about transaction hash table to the
+      log file.
+    command: |
+      dump-wr:
+    output:
+      - description: |
+          Return OK upon receipt
+
+          The server will dump transaction data to the log
+          similar to the following
+
+          ```asciidoc
+          There are 0 entries in g_write_hash @ time = 4782511257:
+          ```
+    examples:
+      - title: "Execute Command"
+        sample: |
+          asinfo -v 'dump-wr:'
+          ok
+
+  - name       : "eviction-reset"
+    since      : "4.5.1"
+    permission : "data-admin"
+    dnd        : false
+    purpose    : |
+      Available in Aerospike version 4.5.1 and above.<br><br>
+      Removes a namespace's eviction void time entry in the associated SMD (System Meta Data) file.
+      This will allow (some) previously evicted records to be resurrected on a subsequent cold restart (only those records that have not
+      had their persisted storage block overwritten by other records).
+      This means that the prior eviction depth for the namespace will no longer be enforced  -- subsequent nsup cycles will evict
+      again with a recomputed eviction depth when another breach occurs.
+    command    : "eviction-reset:namespace=<namespace name>"
+    parameters :
+      - name: "namespace"
+        description: |
+          Name of the namespace for which to reset eviction.
+    output     :
+      description: |
+        ok
+    examples   :
+      title: "Reset eviction for namespace test"
+      sample: |
+        asinfo -v 'eviction-reset:namespace=test'
+
+  - name       : "features"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because it is not particularly useful to the user
+    purpose    : |
+      Returns list of features supported by this server.
+    usage      : "TODO"
+
+  - name       : "jem-stats"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      * Not documenting because it is not expected to be used by the user.
+    purpose    : |
+      Print JEMalloc statistics to the log file.
+    usage      : "TODO"
+
+  - name       : "set-log"
+    since      : "3.3.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Redundant to "log-set".
+    purpose    : |
+      Alias for `log-set`
+    usage      : "See `log-set`"
+    related:
+      - name: "log"
+      - name: "logs"
+
+  - name       : "mem"
+    since      : "3.3.0"
+    removed    : "3.13.0"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose    : |
+      Report on memory usage.
+    usage      : "TODO"
+
+  - name       : "mstats"
+    since      : "3.3.0"
+    removed    : "3.14.2"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose    : |
+      Print GLibC level memory stats to the log file.
+    usage      : "TODO"
+
+  - name       : "mtrace"
+    since      : "3.3.0"
+    removed    : "3.14.2"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only, document later
+    purpose    : |
+      Control GLibC level memory tracing.
+    usage      : "TODO"
+
+  - name       : "name"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      Only need a single way to get Node ID.
+    purpose    : |
+      Alias for `node`.
+    usage      : |
+      See `node`
+
+  - name       : "objects"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Redundant to information available in statistics
+    purpose    : |
+      Returns the number of objects stored on this server.
+    usage      : "TODO"
+
+  - name       : "partition-generation"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because not will not be used by the user,
+      * Also why isn't this just a stat in statistics?
+    purpose    : |
+      Returns the current partition generation.
+    usage      : "TODO"
+
+  - name       : "partition-info"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because not will not be used by the user
+    purpose    : |
+      Returns partition ownership information.
+    usage      : "TODO"
+
+  - name       : "partitions"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because not will not be used by the user
+    purpose    : |
+      Returns the number of partitions used to hash keys across.
+    usage      : "TODO"
+
+  - name       : "replicas-master"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because not will not be used by the user
+    purpose    : |
+      Base 64 encoded binary representation of partitions this node is master
+      (replica) for.
+    usage      : "TODO"
+
+  - name       : "replicas-prole"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because not will not be used by the user
+    purpose    : |
+      Base 64 encoded binary representation of partitions this node is prole
+      (replica) for.
+    usage      : "TODO"
+
+  - name       : "replicas-read"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because not will not be used by the user
+    purpose    : "TODO"
+    usage      : "TODO"
+
+  - name       : "replicas-write"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because not will not be used by the user
+    purpose    : "TODO"
+    usage      : "TODO"
+
+  - name       : "scan-kill"
+    since      : "3.3.0"
+    removed    : "3.3.0"
+    dnd        : true
+    issues     : |
+      * This was replaced by jobs
+    purpose    : |
+      Removed: Replaced by jobs.
+    usage      : |
+      Removed
+
+  - name       : "scan-setpriority"
+    since      : "3.3.0"
+    removed    : "3.3.0"
+    dnd        : true
+    issues     : |
+      * This was replaced by jobs
+    purpose    : |
+      Removed: Replaced by jobs.
+    usage      : |
+      Removed
+
+  - name       : "show-devices"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      Internal use only, document later.
+    purpose    : |
+      Print snapshot of wblocks to the log file.
+    usage      : "TODO"
+
+  - name       : "sindex-dump"
+    since      : "3.3.0"
+    removed    : "3.14"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only. Document later
+    purpose    : "TODO"
+    usage      : "TODO"
+
+  - name       : "sindex-qnodemap"
+    since      : "3.3.0"
+    removed    : "3.7.0"
+    dnd        : true
+    issues     : |
+      Internal use only. Document later
+    purpose    : "TODO"
+    usage      : "TODO"
+
+  - name       : "sindex-repair"
+    since      : "3.3.0"
+    removed    : "3.14"
+    permission : "sys-admin"
+    dnd        : true
+    issues     : |
+      Internal use only. Document later
+    purpose    : "TODO"
+    usage      : "TODO"
+
+  - name       : "smd"
+    since      : "3.3.0"
+    removed    : "3.12"
+    dnd        : true
+    issues     : |
+      Internal use only. Document later
+    purpose    : "TODO"
+    usage      : "TODO"
+
+  - name       : "snub"
+    since      : "3.3.0"
+    removed    : "3.9.1"
+    dnd        : true
+    issues     : |
+      Snub doesn't send confirmation to the client
+      Also is a bit redundant to dun, though I like the ability to specify for
+        how long to dun.
+    purpose    : |
+      Ignore heartbeats from a node for a specified amount of time.
+    command    : |
+      snub:node=<NODE_ID>;[time=SECONDS]
+
+  - name       : "quiesce"
+    since      : "4.3.1"
+    ee-only    : true
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Cause a node to avoid participating as a replica after the next recluster
+      event. Quiescing and reclustering before removing a node from the cluster
+      prevents client timeouts that may otherwise happen when a node drops from
+      the cluster. Quiescing can also help when decommissioning one or more
+      nodes and it is desirable to maintain full replication during the
+      decommissioning process. Refer to the [Quiesce Node](/docs/operations/manage/cluster_mng/quiescing_node) 
+      page for further details.
+    command    : "quiesce"
+    output     :
+      description: |
+        On success returns OK.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          Admin> asinfo -v 'quiesce:' with 192.168.100.233
+          192.168.100.233:3000 (192.168.100.233) returned:
+          ok
+    related:
+      - name: "recluster"
+      - name: "quiesce-undo"
+
+  - name       : "quiesce-undo"
+    since      : "4.3.1"
+    ee-only    : true
+    permission : "sys-admin"
+    dnd        : false
+    purpose    : |
+      Revert the effects of the [`quiesce`](/docs/reference/info/#quiesce) on
+      the next recluster event.
+    command    : "quiesce-undo"
+    output     :
+      description: |
+        On success returns OK.
+    examples   :
+      - name: "Execute Command"
+        sample: |
+          Admin> asinfo -v 'quiesce-undo:' with 192.168.100.233
+          192.168.100.233:3000 (192.168.100.233) returned:
+          ok
+    related:
+      - name: "recluster"
+      - name: "quiesce"
+
+  - name       : "version"
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * Not documenting because build is more useful, and do not want the
+        confusion a similar command may bring
+    purpose    : |
+      Returns the Aerospike server major version.
+    usage      : "TODO"
+
+  - name       : "xdr-min-lastshipinfo"
+    ee-only    : true
+    since      : "3.3.0"
+    dnd        : true
+    issues     : |
+      * This should be a metric in statistics
+    purpose    : "Should be a stat"
+    usage      : "This should be a stat"

@@ -1,0 +1,7 @@
+aerospike-server:
+  image: aerospike/aerospike-server:3.6.0
+  labels:
+    - "com.aerospike.cluster=$PROJ"
+  volumes:
+    - "$PWD:/opt/aerospike/etc/"
+  net: prod

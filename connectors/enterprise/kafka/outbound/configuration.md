@@ -1,0 +1,260 @@
+---
+title: Configure Aerospike Connect for Kafka - Outbound
+description: Configuring the Aerospike Connect for Kafka Outbound Connector
+---
+
+## Aerospike Database setup
+
+Aerospike Connect for Kafka relies on the [Change Notification](/docs/guide/change_notification/index.html) feature of the Aerospike Database. 
+In the Aerospike server configuration xdr and change detection must be enabled. In addition, the Kafka cluster must be configured as an "http" xdr datacenter 
+and the namespace must point to this as xdr remote datacenter.
+
+See the [Change Notification Configuration](/docs/guide/change_notification/configure.html) documentation for reference but the relevant configuration might be:
+
+{{#code}}
+xdr {
+        enable-xdr true
+        enable-change-notification true
+        xdr-digestlog-path /etc/aerospike/digestlog.log1 100G
+        xdr-compression-threshold 1000
+        xdr-info-port 3004
+        datacenter my-kafka {
+                dc-type http
+                http-version v2
+                http-url http://my.kafka.host:8086/aerospike/kafka/publish
+        }
+}
+namespace test {
+        enable-xdr true
+        xdr-remote-datacenter my-kafka
+        ...
+}
+{{/code}}
+
+### Aerospike Connect for Kafka
+
+The Aerospike Connect for Kafka is configured via the
+`/etc/aerospike-kafka/application.yml` config file:
+
+* `featureKeyLocation` - The location of the Aerospike feature key file;
+  default: `/etc/aerospike-kafka/features.conf`.
+* `format` - The record serialization format; currently supported are
+  * `msgpack` - MessagePack
+  * `json` - JSON (default)
+* `routing.topic` - The default Kafka topic to send record updates to; default:
+  `aerospike`.
+* `routing.mode` - The routing mode used by the connector to determine the
+  Kafka topic to send the message to; See below for more information.
+* `kafka.bootstrapServers` - A list of host/port pairs to use for establishing
+  the initial connection to the Kafka cluster; default: `localhost:9092`.
+* `kafka.producerPoolSize` - Number of Kafka Producer instances to use when
+  sending messages; default: 1.
+* `kafka.*` - Additional configuration for the Kafka producer; see below.
+
+### Message Routing
+
+The connector can route incoming messages to one or more Kafka topics. The
+routing can be static, i.e. all messages are routed to the same, statically
+configured topic, or dynamic, i.e. messages are routed to a different topic
+depending on some property of the message itself. Currently, the connector
+supports four different routing modes:
+
+  * `static` - Always route to the static default topic.
+  * `namespace` - Use the namespace of the Aerospike record as the Kafka topic.
+  * `set` - Use the set of the Aerospike record as the Kafka topic. (Falls back
+    to the default topic, if the record does not belong to any set.)
+  * `path` - Use the URL part after `/publish/` used by the Aerospike Change
+    Notification Framework to publish the record as the Kafka topic, e.g. when
+    publishing to `/aerospike/kafka/publish/sometopic` the record will be routed
+    to the Kafka topic "sometopic".
+
+The default routing mode is `static`. To select a different mode, update the
+`routing.mode` config in the application.yml config file. The `set`
+and `path` routing modes will fall back to the configured static topic name if
+the request does not include a set name or additional URL path.
+
+### Kafka Producer
+
+The Kafka Producer can be configured through the application.yml config file.
+Most of the [producer
+config](https://kafka.apache.org/documentation/#producerconfigs) supported by
+the Kafka client maps to the `kafka` section of application.yml:
+
+| Kafka Producer Config | Description | Default |
+|-----------------------|-------------|---------|
+| `acks` | Number of acknowledgements the producer requires before considering a request complete. | "1" |
+| `bootstrapServers` | List of host/port pairs to use for establishing the initial connection to the Kafka cluster. | "localhost:9092" |
+| `batchSize` | The producer will attempt to batch records together into fewer requests whenever multiple records are being sent to the same partition. This helps performance on both the client and the server. This configuration controls the default batch size in bytes. | 1000012 (~976 KB, the default max. message size allowed by Kafka) |
+| `bufferMemory` | Total bytes of memory the producer can use to buffer records waiting to be sent to the server. | 33554432 (32 MB) |
+| `clientId` | An id string to pass to the server when making requests. The purpose of this is to be able to track the source of requests beyond just ip/port by allowing a logical application name to be included in server-side request logging. Note: The default pooled producer factory appends a running number to this ID to create unique IDs for each producer in the pool. | "com.aerospike.connect" |
+| `compressionType` | Compression type for all data generated by the producer. | none |
+| `retries` | Setting a value greater than zero will cause the client to resend any record whose send fails with a potentially transient error. | 0 |
+
+Additional settings control if and how the client sets up an encrypted SSL/TLS connection with the Kafka brokers:
+
+| Kafka Producer SSL Config | Description |
+|-----------------------|-------------|
+| `keyPassword` | The password of the private key in the key store file. |
+| `keystoreLocation` | The location of the key store file. |
+| `keystorePassword` | The store password for the key store file. |
+| `protocol` | The SSL protocol used to generate the SSLContext. Default setting is TLS. |
+| `truststoreLocation` | The location of the trust store file. |
+| `truststorePassword` | The password for the trust store file. |
+
+Additional producer settings, that are not supported in `application.yml`,
+can be set in `/etc/aerospike-kafka/producer.properties`. This can
+e.g. be used to configure SALS authentication for the connection to the Kafka
+brokers among other connection parameters. Please refer to the [Kafka
+documentation](https://kafka.apache.org/documentation/#producerconfigs) for a
+list of supported configuration properties.
+
+### Jetty Configuration
+
+The Aerospike Connect for Kafka utilizes the Eclipse Jetty javax.servlet container runtime
+environment. The Jetty web server is configured via the
+`/etc/aerospike-kafka/jetty.ini` config file.
+
+#### HTTP
+
+To configure the Jetty HTTP Connector, e.g. to set the listen address/port,
+edit the properties in the `jetty.ini` file:
+
+    ## Connector host/address to bind to
+    jetty.http.host=0.0.0.0
+
+    ## Connector port to listen on
+    jetty.http.port=8080
+
+#### HTTP/2
+
+The Jetty HTTP Connector supports both HTTP/1.1 as well as HTTP/2.0. On the
+web, HTTP/2.0 is usually only used over TLS. However, the Messaging Connector
+supports HTTP/2.0 both encrypted via TLS (via the Jetty `http2` module) and
+unencrypted (via the Jetty `http2c` module). The `http2c` module is enabled by
+default, but to enable the `http2` module, TLS needs to be configured first.
+(See below.)
+
+#### TLS
+
+By default, only the Jetty HTTP Connector is enabled. To enable the SSL/TLS
+Connector for HTTPS support, edit the `jetty.ini` file and uncomment the
+`ssl`, `conscrypt` and `https` modules, as well as optionally the `http2`
+module:
+
+    --module=ssl
+    --module=conscrypt
+    --module=https
+    --module=http2
+
+The `http2` module enables the HTTP/2 protocol via TLS.
+
+You can configure the connector host/address to bind to and port to listen on
+in the same file:
+
+    ## Connector host/address to bind to
+    jetty.ssl.host=0.0.0.0
+
+    ## Connector port to listen on
+    jetty.ssl.port=8443
+
+Configuring TLS/SSL is a complex topic and the ["Configuring Jetty for
+SSL"](https://www.eclipse.org/jetty/documentation/current/configuring-ssl.html)
+documentation provides a comprehensive overview of how to configure SSL and TLS
+for Jetty. The following sections cover the most important aspects for common
+use-cases.
+
+##### Keystore
+
+The Jetty SSL/TLS Connector requires a public/private key pair and
+corresponding certificate, which need to be provided in a keystore file. By
+default, Jetty expects the keystore file to be placed in `/etc/aerospike-kafka/keystore`,
+but this path can be changed in the `jetty.ini` config file.
+
+Jetty supports both the proprietary Java Keystore format ("JKS") as well as the
+"PKCS12" format, based on the RSA PKCS12 Personal Information Exchange Syntax
+Standard. Up to Java 8, the default keystore format is JKS, but in JKD 9 and
+later, the default is the PKCS12 format. One of the differences between the two
+formats is that JKS protects each private key with its individual password,
+while also protecting the integrity of the entire keystore with a (possibly
+different) password. A PKCS12 keystore, on the other hand, only uses a single
+password for the entire keystore. For the Kafka Connector, we recommend using
+the PKCS12 keystore format.
+
+For development and testing, you can generate a new key pair and certificate
+using the JDK's `keytool` command line utility. The following command creates a
+new keystore file and key/cert pair:
+
+    $ keytool -keystore resources/keystore -alias jetty -genkeypair -storetype PKCS12 -keyalg RSA
+
+The keytool will prompt for a new password for the keystore file as well as
+some additional information about the certificate.
+
+    $ keytool -keystore resources/keystore -alias jetty -genkeypair -storetype PKCS12 -keyalg RSA
+    Enter keystore password:
+    Re-enter new password:
+    What is your first and last name?
+      [Unknown]:
+    What is the name of your organizational unit?
+      [Unknown]:
+    What is the name of your organization?
+      [Unknown]:
+    What is the name of your City or Locality?
+      [Unknown]:
+    What is the name of your State or Province?
+      [Unknown]:
+    What is the two-letter country code for this unit?
+      [Unknown]:
+    Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+      [no]:  yes
+
+Once you have created the keystore, update the keystore password you set in the
+`jetty.ini` startup file. If you created a PKCS12 keystore, the `keyManagerPassword`
+needs to be set to the same password as the `keyStorePassword`. If you created
+a JKS keystore, set the respective keystore and key passwords:
+
+    ## Keystore file path
+    # jetty.sslContext.keyStorePath=/etc/aerospike-kafka/keystore
+
+    ## Keystore password
+    jetty.sslContext.keyStorePassword=<keystore password>
+
+    ## Key password
+    # For PKCS12, this needs to be the same as the keyStorePassword.
+    jetty.sslContext.keyManagerPassword=<key/keystore password>
+
+If you have an existing private key and certificate (chain) as separate PEM
+files -- e.g. a key pair generated by OpenSSL and a cert issued by a CA -- you
+can combine these two files into a PKCS12 keystore using the OpenSSL tools:
+
+    $ openssl pkcs12 -inkey ./key.pem -in ./cert.pem --export -out resources/keystore
+
+If you have a chain of certificates, because your CA is an intermediary, build
+the PKCS12 file as follows:
+
+    $ cat ./cert.pem intermediate.pem rootCA.pem > cert-chain.pem
+    $ openssl pkcs12 -inkey ./key.pem -in ./cert-chain.pem -export -out resources/keystore
+
+The command will prompt for an export password. This will be the keystore
+password of the newly created keystore file. Update the `jetty.ini`
+startup file as per above, making sure that the keyStorePassword and
+keyManagerPassword are set to the chosen export password.
+
+For more information and additional references please refer to the Jetty
+project's documentation [Configuring Jetty for
+SSL](https://www.eclipse.org/jetty/documentation/current/configuring-ssl.html).
+
+### Feature Key
+
+On startup, the connector checks that a valid Aerospike feature key file is
+present and that the required feature keys are enabled. The default location
+for the feature key file is `/etc/aerospike-kafka/features.conf`.
+
+### Logging
+
+The Aerospike Connect for Kafka uses the [Log4j 2](https://logging.apache.org/log4j/2.x/)
+logging library. Log files, log levels, etc. are controlled via the
+`/etc/aerospike-kafka/log4j2.xml` config file. By default, on Systemd
+controlled systems, the connector logs to the console (STDOUT) only. The logs
+can be viewed using the `journalctl` tool. On systems using the System V init
+scripts, the connector logs to the `/var/log/aerospike-kafka/application.log'
+log file by default.

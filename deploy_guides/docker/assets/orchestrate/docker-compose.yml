@@ -1,0 +1,19 @@
+aerospike:
+  extends:
+    file: aes_base.yml
+    service: aerospike-server
+  image: aerospike/aerospike-server:3.8.4
+  environment:
+    - "affinity:com.aerospike.cluster!=$PROJ"
+
+discovery:
+  image: aerospike/interlock:latest
+  environment:
+    - "DOCKER_HOST"
+    - AEROSPIKE_NETWORK_NAME=prod
+    - AEROSPIKE_CLUSTER_NAME=$PROJ
+#    - "constraint:node==swarm-0"
+  volumes:
+    - "/var/lib/boot2docker:/etc/docker"
+  command: "--swarm-url=$DOCKER_HOST --swarm-tls-ca-cert=/etc/docker/ca.pem --swarm-tls-cert=/etc/docker/server.pem --swarm-tls-key=/etc/docker/server-key.pem --debug --plugin aerospike start"
+  net: bridge

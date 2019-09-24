@@ -1,0 +1,14 @@
+title: REST Client Manual
+
+baseurl: /docs/client/rest
+assets: /docs/client/rest/assets
+
+vars:
+  download-url: /download/client/rest/latest
+  api-url: /apidocs/rest
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .
+  

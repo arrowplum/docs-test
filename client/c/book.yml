@@ -1,0 +1,14 @@
+title: C Client Manual
+
+baseurl: /docs/client/c
+assets: /docs/client/c/assets
+
+vars:
+  download-url: /download/client/c/latest
+  api-url: /apidocs/c
+  github-url: http://github.com/aerospike/aerospike-client-c
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .

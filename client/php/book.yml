@@ -1,0 +1,13 @@
+title: PHP Client Manual
+
+baseurl: /docs/client/php
+assets: /docs/client/php/assets
+
+vars:
+  download-url: /download/client/php/latest
+  api-url: /apidocs/php
+  server-install: /docs/operations/install
+
+contents:
+  - title: Introduction
+    href: .

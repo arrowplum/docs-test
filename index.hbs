@@ -1,0 +1,161 @@
+---
+layout: docs
+layout-styles:
+  - /assets/styles/layouts/book.css
+---
+
+{{> docs-sidebar  iconPosition='down' }}
+
+    {{!--
+    ############################################################################
+    CONTENT
+    ############################################################################
+    --}}
+
+    <style>
+      ul.feed > li > a > h4 {
+        color: #c31618;
+      }
+    </style>
+
+    <div class="small-12 medium-9 columns content">
+      <div class="page-content">
+        <div id="sidebar">
+            <div class="ng-view ng-cloak"></div>
+        </div>
+          
+      </div>
+      <gcse:searchresults></gcse:searchresults>
+    </div>
+
+
+
+      {{!--
+      ##############################################################################
+      HEADER
+      ##############################################################################
+      --}}
+
+
+      {{!--
+      ##############################################################################
+      BODY
+      ##############################################################################
+      --}}
+
+      <div id="content-end"></div>
+
+    </div>
+  </div>
+
+  {{!--
+  ##############################################################################
+  COMPLEMENTARY
+  ##############################################################################
+  --}}
+
+  <div class="row">
+
+    <aside id="complementary" class="small-12 medium-9 columns">
+
+      {{!--
+      ##########################################################################
+      RELATED
+      ##########################################################################
+      --}}
+      {{#if page.related ~}}
+      <hr>
+      <nav class="related">
+        <header>Related Articles:</header>
+        <ul>
+          {{#withSort page.related 'data.title' ~}}
+          <li>
+            <a href="{{relative ../page.dest this.dest}}">{{this.data.title}}</a>
+          </li>
+          {{/withSort ~}}
+        </ul>
+      </nav>
+      {{/if ~}}
+
+      {{!--
+      ##########################################################################
+      TAGS
+      ##########################################################################
+      --}}
+      {{#if page.tags ~}}
+      <hr>
+      <nav class="tags">
+        <header><i class="glyphicon glyphicon-tags"></i>Tags:</header>
+        {{#page.tags ~}}
+        <a href="#" class="label label-danger">{{.}}</a>&nbsp;
+        {{/page.tags ~}}
+      </nav>
+      {{/if ~}}
+
+      {{#if page.categories ~}}
+      <hr>
+      <nav class="categories">
+        <header><i class="glyphicon glyphicon-folder-close"></i>Categories:</header>
+        {{#page.categories ~}}
+        <a href="#" class="label label-default">{{.}}</a>&nbsp;
+        {{/page.categories ~}}
+      </nav>
+      {{/if ~}}
+
+    </aside>
+
+  </div>
+
+</article>
+
+<script>
+var DOCINDEX_EXPAND = {{default toc.expand "0"}};
+
+var savedText = "";
+    
+(function() {
+  window.__gcse = {
+    callback: myCallback
+  };
+
+   function myCallback() {
+    $('input.search-component').keyup(function(e){
+      if(e.keyCode == 13 || e.which == 13){
+        console.log('enter pressed');
+        $('.ng-view').text("");
+      }
+    });
+       
+    $('input.gsc-input').keyup(function(e){
+      if(e.keyCode == 13 || e.which == 13){
+         savedText = $('.ng-view').html();
+         $('.ng-view').text("");
+      }
+    });
+       
+    $('input.gsc-search-button').on('click', function(e){
+      console.log('clicked');
+      $('.ng-view').text("");
+    });
+       
+     $('input.gsc-clear-button').on('click', function(e){
+      console.log('clicked');
+      $('.ng-view').text("");
+    });
+       
+     $('.gsst_a').on('click', function(e){
+        $('.ng-view').html(savedText);
+        savedText = "";
+    });
+  }
+  var cx = '009887752435227050272:9qibe5hg0km'; //'008936202745223780743:4hdw9tiwp94';
+  var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
+  gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+      '//www.google.com/cse/cse.js?cx=' + cx;
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
+})();
+
+setTimeout(function(){
+  $('#gsc-i-id1').attr('placeholder', 'Search Docs...');
+}, 1000);
+</script>

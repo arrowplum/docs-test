@@ -1,0 +1,40 @@
+title: Documentation
+baseurl: /docs
+
+nav:
+  - id: training
+    title: Training
+    href: ../training
+
+contents:
+  - title: Key-Value Store
+    href: kvs.html
+    children:
+    - title: Single Key
+      href: single.html
+  - title: Data Types
+    href: /docs/guide/data-types.html
+    children:
+      - title: List
+        href: /docs/guide/cdt-list.html
+      - title: Map
+        href: /docs/guide/cdt-map.html
+      - title: Geospatial
+        href: /docs/guide/geospatial.html
+  - title: Batch
+    href: batch.html
+  - title: Scan
+    href: scan.html
+  - title: Query
+    href: query.html
+  - title: User-Defined Functions
+    href: udf.html
+    children:
+    - title: Record UDF
+      href: record_udf.html
+    - title: Stream UDF
+      href: stream_udf.html
+  - title: Aggregations
+    href: aggregation.html
+  - title: Security
+    href: security.html

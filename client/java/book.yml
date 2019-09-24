@@ -1,0 +1,15 @@
+title: Java Client Manual
+
+baseurl: /docs/client/java
+assets: /docs/client/java/assets
+
+vars:
+  download-url: /download/client/java/latest
+  api-url: /apidocs/java
+  github-url: http://github.com/aerospike/aerospike-client-java
+  server-install: /docs/operations/install
+  sample-application-url: https://github.com/aerospike/aerospike-sample-applications
+
+contents:
+  - title: Introduction
+    href: .

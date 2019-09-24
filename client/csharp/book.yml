@@ -1,0 +1,15 @@
+title: "C# Client Manual"
+
+baseurl: /docs/client/csharp
+assets: /docs/client/csharp/assets
+
+vars:
+  download-url: /download/client/csharp/latest
+  api-url: /apidocs/csharp/Index.html
+  github-url: http://github.com/aerospike/aerospike-client-csharp
+  server-install: /docs/operations/install
+  sample-application-url: https://github.com/aerospike/aerospike-sample-applications
+
+contents:
+  - title: Introduction
+    href: .

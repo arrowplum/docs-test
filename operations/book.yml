@@ -1,0 +1,13 @@
+title: Operations Manual
+
+# base_url is /docs and not /docs/operations because we want to have AWS and GCE install links here
+baseurl: /docs
+assets: /docs/operations/assets
+
+vars:
+  github-url: https://github.com/aerospike/aws-cloudformation
+
+contents:
+  - title: Introduction
+    href: operations/
+
